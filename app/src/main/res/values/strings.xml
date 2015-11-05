@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">MySimplePlayer</string>
+
+    <string name="drawer_open">Side Navigation Opened</string>
+    <string name="drawer_close">Side Navigation Closed</string>
+
+    <string-array name="side_nav_items">
+        <item >Library</item>
+        <item >Settings</item>
+    </string-array>
+</resources>
