@@ -3,8 +3,11 @@ package com.jj.mysimpleplayer;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -17,6 +20,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -97,12 +101,15 @@ public class MainActivity extends AppCompatActivity  {
             mDrawerList.setItemChecked(position, true);
             mDrawerList.setSelection(position);
             mActivityTitle = sideNavItems[position];
-            getSupportActionBar().setTitle(mActivityTitle);
             mDrawerLayout.closeDrawer(mDrawerList);
+
+            assert getSupportActionBar() != null;
+            getSupportActionBar().setTitle(mActivityTitle);
         }
     }
 
     private void setupSideNavToggle() {
+        assert getSupportActionBar() != null;
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
 
@@ -137,12 +144,27 @@ public class MainActivity extends AppCompatActivity  {
                     (android.provider.MediaStore.Audio.Media._ID);
             int artistColumn = musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.ARTIST);
+            int albumArtColumn = musicCursor.getColumnIndex
+                    (MediaStore.Audio.Albums.ALBUM_ART);
+            int albumIdColumn = musicCursor.getColumnIndex
+                    (MediaStore.Audio.Albums.ALBUM_ID);
 
             do {
                 int thisId = musicCursor.getInt(idColumn);
                 String thisTitle = musicCursor.getString(titleColumn);
                 String thisArtist = musicCursor.getString(artistColumn);
-                songLibrary.add(new Song(thisId, thisTitle, thisArtist));
+                int albumId = musicCursor.getInt(albumIdColumn);
+
+                Uri imageUri = Uri.parse("content://media/external/audio/albumart");
+                Uri albumArtUri = ContentUris.withAppendedId(imageUri, albumId);
+
+                Bitmap coverArt = null;
+                try {
+                    coverArt = MediaStore.Images.Media.getBitmap(getContentResolver(), albumArtUri);
+                } catch (Exception ex) {
+                }
+
+                songLibrary.add(new Song(thisId, thisTitle, thisArtist, coverArt));
             }
             while (musicCursor.moveToNext());
 
@@ -156,7 +178,7 @@ public class MainActivity extends AppCompatActivity  {
 
             for(int x = 0; x < 1000; x++) {
                 int id = 50 + x;
-                songLibrary.add(new Song(id, "lol" + id, "hi" + id));
+                songLibrary.add(new Song(id, "lol" + id, "hi" + id, null));
             }
         }
     }

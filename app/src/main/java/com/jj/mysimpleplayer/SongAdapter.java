@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ public class SongAdapter extends BaseAdapter {
     static class ViewHolderItem {
         TextView songView;
         TextView artistView;
+        ImageView corverArtView;
     }
 
     public SongAdapter(Context c, ArrayList<Song> songs){
@@ -48,6 +50,7 @@ public class SongAdapter extends BaseAdapter {
             viewHolder = new ViewHolderItem();
             viewHolder.songView = (TextView)convertView.findViewById(R.id.song_title);
             viewHolder.artistView = (TextView)convertView.findViewById(R.id.song_artist);
+            viewHolder.corverArtView = (ImageView)convertView.findViewById(R.id.cover_art);
 
             convertView.setTag(viewHolder);
         } else {
@@ -59,6 +62,7 @@ public class SongAdapter extends BaseAdapter {
         if (currentSong != null) {
             viewHolder.songView.setText(currentSong.getTitle());
             viewHolder.artistView.setText(currentSong.getArtist());
+            viewHolder.corverArtView.setImageBitmap(currentSong.getCoverArt());
         }
 
         return convertView;
