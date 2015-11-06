@@ -28,6 +28,7 @@ import android.widget.ListView;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 
 import com.jj.mysimpleplayer.PlaybackService.PlaybackBinder;
 
@@ -197,6 +198,8 @@ public class MainActivity extends AppCompatActivity  {
             int albumIdColumn = musicCursor.getColumnIndex
                     (MediaStore.Audio.Albums.ALBUM_ID);
 
+            HashMap<Integer, Bitmap> fetchedImages = new HashMap<>();
+
             do {
                 int thisId = musicCursor.getInt(idColumn);
                 String thisTitle = musicCursor.getString(titleColumn);
@@ -206,11 +209,20 @@ public class MainActivity extends AppCompatActivity  {
                 Uri albumArtUri = ContentUris.withAppendedId(imageUri, albumId);
 
                 Bitmap coverArt = null;
-                try {
-                    coverArt = MediaStore.Images.Media.getBitmap(getContentResolver(), albumArtUri);
-                } catch (Exception ex) { }
 
-                songLibrary.add(new Song(thisId, thisTitle, thisArtist, coverArt));
+                coverArt = fetchedImages.get(albumId);
+
+                if (coverArt == null) {
+                    try {
+                        coverArt = MediaStore.Images.Media.getBitmap(getContentResolver(), albumArtUri);
+
+                        if (coverArt != null) {
+                            fetchedImages.put(albumId, coverArt);
+                        }
+                    } catch (Exception ex) { }
+                }
+
+                songLibrary.add(new Song(thisId, albumId, thisTitle, thisArtist, coverArt));
             }
             while (musicCursor.moveToNext());
 
@@ -224,7 +236,7 @@ public class MainActivity extends AppCompatActivity  {
 
             for(int x = 0; x < 1000; x++) {
                 int id = 50 + x;
-                songLibrary.add(new Song(id, "lol" + id, "hi" + id, null));
+                songLibrary.add(new Song(id, id, "lol" + id, "hi" + id, null));
             }
         }
     }
