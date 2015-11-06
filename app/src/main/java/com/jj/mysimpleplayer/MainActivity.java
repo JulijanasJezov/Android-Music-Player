@@ -2,13 +2,17 @@ package com.jj.mysimpleplayer;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
@@ -20,10 +24,12 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import java.io.InputStream;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+
+import com.jj.mysimpleplayer.PlaybackService.PlaybackBinder;
 
 public class MainActivity extends AppCompatActivity  {
 
@@ -33,6 +39,10 @@ public class MainActivity extends AppCompatActivity  {
     private ListView mDrawerList;
     private String[] sideNavItems;
     public static ArrayList<Song> songLibrary;
+
+    public PlaybackService playbackService;
+    private Intent playbackIntent;
+    private boolean playbackBound = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +75,35 @@ public class MainActivity extends AppCompatActivity  {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+
+        if(playbackIntent==null){
+            playbackIntent = new Intent(this, PlaybackService.class);
+            bindService(playbackIntent, playbackServiceConnection, Context.BIND_AUTO_CREATE);
+            startService(playbackIntent);
+        }
+    }
+
+    private ServiceConnection playbackServiceConnection = new ServiceConnection(){
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            PlaybackBinder binder = (PlaybackBinder)service;
+
+            playbackService = binder.getService();
+
+            playbackService.setSongLibrary(songLibrary);
+            playbackBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            playbackBound = false;
+        }
+    };
+
+    @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         mDrawerToggle.syncState();
@@ -79,6 +118,17 @@ public class MainActivity extends AppCompatActivity  {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         mDrawerToggle.onConfigurationChanged(newConfig);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if (playbackBound) {
+            unbindService(playbackServiceConnection);
+        }
+        stopService(playbackIntent);
+        playbackService = null;
     }
 
     private void openFragment(int position) {
@@ -132,9 +182,9 @@ public class MainActivity extends AppCompatActivity  {
 
     public void getSongLibrary() {
         ContentResolver musicResolver = getContentResolver();
+        Uri imageUri = Uri.parse("content://media/external/audio/albumart");
         Uri musicUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
-
         Cursor musicCursor = musicResolver.query(musicUri, null, selection, null, null);
 
         if(musicCursor != null && musicCursor.moveToFirst()){
@@ -144,8 +194,6 @@ public class MainActivity extends AppCompatActivity  {
                     (android.provider.MediaStore.Audio.Media._ID);
             int artistColumn = musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.ARTIST);
-            int albumArtColumn = musicCursor.getColumnIndex
-                    (MediaStore.Audio.Albums.ALBUM_ART);
             int albumIdColumn = musicCursor.getColumnIndex
                     (MediaStore.Audio.Albums.ALBUM_ID);
 
@@ -155,14 +203,12 @@ public class MainActivity extends AppCompatActivity  {
                 String thisArtist = musicCursor.getString(artistColumn);
                 int albumId = musicCursor.getInt(albumIdColumn);
 
-                Uri imageUri = Uri.parse("content://media/external/audio/albumart");
                 Uri albumArtUri = ContentUris.withAppendedId(imageUri, albumId);
 
                 Bitmap coverArt = null;
                 try {
                     coverArt = MediaStore.Images.Media.getBitmap(getContentResolver(), albumArtUri);
-                } catch (Exception ex) {
-                }
+                } catch (Exception ex) { }
 
                 songLibrary.add(new Song(thisId, thisTitle, thisArtist, coverArt));
             }
@@ -181,5 +227,11 @@ public class MainActivity extends AppCompatActivity  {
                 songLibrary.add(new Song(id, "lol" + id, "hi" + id, null));
             }
         }
+    }
+
+    public void playSong(View view) {
+        int songPos = Integer.parseInt(view.findViewById(R.id.song_title).getTag().toString());
+        playbackService.setCurrentSong(songPos);
+        playbackService.playSong();
     }
 }

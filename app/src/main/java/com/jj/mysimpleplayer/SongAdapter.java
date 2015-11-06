@@ -14,8 +14,8 @@ public class SongAdapter extends BaseAdapter {
     private ArrayList<Song> songLibrary;
     private LayoutInflater songInflater;
 
-    static class ViewHolderItem {
-        TextView songView;
+    static class SongItem {
+        TextView titleView;
         TextView artistView;
         ImageView corverArtView;
     }
@@ -42,27 +42,28 @@ public class SongAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        ViewHolderItem viewHolder;
+        SongItem songItem;
 
         if (convertView == null) {
             convertView = songInflater.inflate(R.layout.song, parent, false);
 
-            viewHolder = new ViewHolderItem();
-            viewHolder.songView = (TextView)convertView.findViewById(R.id.song_title);
-            viewHolder.artistView = (TextView)convertView.findViewById(R.id.song_artist);
-            viewHolder.corverArtView = (ImageView)convertView.findViewById(R.id.cover_art);
+            songItem = new SongItem();
+            songItem.titleView = (TextView)convertView.findViewById(R.id.song_title);
+            songItem.artistView = (TextView)convertView.findViewById(R.id.song_artist);
+            songItem.corverArtView = (ImageView)convertView.findViewById(R.id.cover_art);
 
-            convertView.setTag(viewHolder);
+            convertView.setTag(songItem);
         } else {
-            viewHolder = (ViewHolderItem) convertView.getTag();
+            songItem = (SongItem) convertView.getTag();
         }
 
         Song currentSong = songLibrary.get(position);
 
         if (currentSong != null) {
-            viewHolder.songView.setText(currentSong.getTitle());
-            viewHolder.artistView.setText(currentSong.getArtist());
-            viewHolder.corverArtView.setImageBitmap(currentSong.getCoverArt());
+            songItem.titleView.setTag(position);
+            songItem.titleView.setText(currentSong.getTitle());
+            songItem.artistView.setText(currentSong.getArtist());
+            songItem.corverArtView.setImageBitmap(currentSong.getCoverArt());
         }
 
         return convertView;
