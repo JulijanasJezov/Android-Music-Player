@@ -40,12 +40,14 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
         songPosition = 0;
         player = new MediaPlayer();
 
-        setMusicPlayer();
+        setupMusicPlayer();
     }
 
-    public void setMusicPlayer () {
+    public void setupMusicPlayer () {
+        // Music player settings
         player.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
         player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+
         player.setOnPreparedListener(this);
         player.setOnCompletionListener(this);
         player.setOnErrorListener(this);
@@ -74,6 +76,15 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
         }
 
         player.prepareAsync();
+    }
+
+    public void pauseSong(){
+        player.pause();
+    }
+
+    public void unpauseSong() {
+        player.seekTo(player.getCurrentPosition());
+        player.start();
     }
 
     public boolean isPlaying() {

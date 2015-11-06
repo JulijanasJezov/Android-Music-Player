@@ -17,6 +17,7 @@ public class LibraryFragment extends Fragment {
 
         ListView libraryView = (ListView)rootView.findViewById(R.id.library_list);
 
+        // Populate library list with songs
         SongAdapter songAdapter = new SongAdapter(getActivity(), MainActivity.songLibrary);
         libraryView.setAdapter(songAdapter);
 

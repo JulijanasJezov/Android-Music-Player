@@ -17,7 +17,7 @@ public class SongAdapter extends BaseAdapter {
     static class SongItem {
         TextView titleView;
         TextView artistView;
-        ImageView corverArtView;
+        ImageView coverArtView;
     }
 
     public SongAdapter(Context c, ArrayList<Song> songs){
@@ -50,7 +50,7 @@ public class SongAdapter extends BaseAdapter {
             songItem = new SongItem();
             songItem.titleView = (TextView)convertView.findViewById(R.id.song_title);
             songItem.artistView = (TextView)convertView.findViewById(R.id.song_artist);
-            songItem.corverArtView = (ImageView)convertView.findViewById(R.id.cover_art);
+            songItem.coverArtView = (ImageView)convertView.findViewById(R.id.cover_art);
 
             convertView.setTag(songItem);
         } else {
@@ -63,7 +63,7 @@ public class SongAdapter extends BaseAdapter {
             songItem.titleView.setTag(position);
             songItem.titleView.setText(currentSong.getTitle());
             songItem.artistView.setText(currentSong.getArtist());
-            songItem.corverArtView.setImageBitmap(currentSong.getCoverArt());
+            songItem.coverArtView.setImageBitmap(currentSong.getCoverArt());
         }
 
         return convertView;

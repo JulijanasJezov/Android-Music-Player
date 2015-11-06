@@ -86,6 +86,13 @@ public class MainActivity extends AppCompatActivity  {
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        bindService(playbackIntent, playbackServiceConnection, Context.BIND_AUTO_CREATE);
+    }
+
     private ServiceConnection playbackServiceConnection = new ServiceConnection(){
 
         @Override
@@ -122,10 +129,16 @@ public class MainActivity extends AppCompatActivity  {
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+
+        unbindService(playbackServiceConnection);
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
 
-        unbindService(playbackServiceConnection);
         if(!playbackService.isPlaying()) {
             stopService(playbackIntent);
             playbackService = null;
@@ -186,6 +199,7 @@ public class MainActivity extends AppCompatActivity  {
         Uri imageUri = Uri.parse("content://media/external/audio/albumart");
         Uri musicUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
+
         Cursor musicCursor = musicResolver.query(musicUri, null, selection, null, null);
 
         if(musicCursor != null && musicCursor.moveToFirst()){
@@ -198,6 +212,7 @@ public class MainActivity extends AppCompatActivity  {
             int albumIdColumn = musicCursor.getColumnIndex
                     (MediaStore.Audio.Albums.ALBUM_ID);
 
+            // Store loaded images
             HashMap<Integer, Bitmap> fetchedImages = new HashMap<>();
 
             do {
@@ -210,6 +225,7 @@ public class MainActivity extends AppCompatActivity  {
 
                 Bitmap coverArt = null;
 
+                // Load image if it's already been loaded once
                 coverArt = fetchedImages.get(albumId);
 
                 if (coverArt == null) {
@@ -233,17 +249,16 @@ public class MainActivity extends AppCompatActivity  {
             });
 
             musicCursor.close();
-
-            for(int x = 0; x < 1000; x++) {
-                int id = 50 + x;
-                songLibrary.add(new Song(id, id, "lol" + id, "hi" + id, null));
-            }
         }
     }
 
     public void playSong(View view) {
+        // Get song position from a song title view tag
         int songPos = Integer.parseInt(view.findViewById(R.id.song_title).getTag().toString());
         playbackService.setCurrentSong(songPos);
         playbackService.playSong();
+
+        Intent intent = new Intent(this, PlayerActivity.class);
+        startActivity(intent);
     }
 }
