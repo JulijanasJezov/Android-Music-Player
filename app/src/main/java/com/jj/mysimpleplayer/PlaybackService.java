@@ -30,10 +30,6 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
     @Override
     public boolean onUnbind(Intent intent) {
-        player.stop();
-        player.reset();
-        player.release();
-
         return false;
     }
 
@@ -80,6 +76,10 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
         player.prepareAsync();
     }
 
+    public boolean isPlaying() {
+        return player.isPlaying();
+    }
+
     @Override
     public void onCompletion(MediaPlayer mp) {
 
@@ -93,6 +93,14 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
     @Override
     public void onPrepared(MediaPlayer mp) {
         mp.start();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        player.reset();
+        player.release();
     }
 
     public class PlaybackBinder extends Binder {

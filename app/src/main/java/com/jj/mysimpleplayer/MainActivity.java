@@ -124,11 +124,11 @@ public class MainActivity extends AppCompatActivity  {
     protected void onDestroy() {
         super.onDestroy();
 
-        if (playbackBound) {
-            unbindService(playbackServiceConnection);
+        unbindService(playbackServiceConnection);
+        if(!playbackService.isPlaying()) {
+            stopService(playbackIntent);
+            playbackService = null;
         }
-        stopService(playbackIntent);
-        playbackService = null;
     }
 
     private void openFragment(int position) {
