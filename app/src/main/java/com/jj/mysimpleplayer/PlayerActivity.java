@@ -5,6 +5,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
@@ -12,6 +13,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.MediaController;
 import android.widget.SeekBar;
@@ -26,9 +28,11 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
     private boolean playbackBound = false;
     private int songPosition;
     private SeekBar songSeekBar;
-    Handler seekHandler = new Handler();
+    private Handler seekHandler = new Handler();
     private TextView progressText;
     private TextView songDurationText;
+    private Boolean isPlayRequested;
+    private Button playPauseButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +41,8 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
 
         Intent intent = getIntent();
         songPosition = intent.getIntExtra(MainActivity.SONG_POSITION, 0);
+        isPlayRequested = intent.getBooleanExtra(MainActivity.PLAY_REQUEST, false);
+        playPauseButton = (Button)findViewById(R.id.play_pause);
     }
 
     @Override
@@ -60,7 +66,16 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
             playbackService = binder.getService();
 
             playbackService.setCallbacks(PlayerActivity.this);
+
+            playPauseButton.setText(playbackService.isPlaying() || isPlayRequested ? "Pause" : "Play");
+
             playbackBound = true;
+
+            if (isPlayRequested) {
+                playbackService.setCurrentSong(songPosition);
+                playbackService.playSong();
+            }
+
         }
 
         @Override
@@ -79,7 +94,6 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
     }
 
     public void playPauseClick(View view) {
-        TextView playPauseButton = (TextView) view;
         if (playbackService.isPlaying()) {
             playPauseButton.setText("Play");
             pause();
@@ -102,6 +116,7 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
         if (playbackService.nextSong()) {
             setSongDuration(UNSET_MAX_DURATION);
             songPosition++;
+            playPauseButton.setText("Pause");
             initUI();
         }
     }
@@ -110,6 +125,7 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
         if (playbackService.prevSong()) {
             setSongDuration(UNSET_MAX_DURATION);
             songPosition--;
+            playPauseButton.setText("Pause");
             initUI();
         }
     }
@@ -121,15 +137,15 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
     };
 
     public void updateSongSeekBar() {
-        if (playbackBound) {
-            if (songSeekBar.getMax() == UNSET_MAX_DURATION && isPlaying()) {
+        if (playbackBound && playbackService.isPlayerStarted()) {
+            if (songSeekBar.getMax() == UNSET_MAX_DURATION) {
                 setSongDuration(getDuration());
             }
 
             int currentPos = getCurrentPosition();
             songSeekBar.setProgress(currentPos);
         }
-        seekHandler.postDelayed(run, 1000);
+        seekHandler.postDelayed(run, 100);
     }
 
     @Override
@@ -209,7 +225,12 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
         songArtistView.setText(song.getArtist());
 
         ImageView coverArtView = (ImageView)findViewById(R.id.cover_art);
-        coverArtView.setImageBitmap(song.getCoverArt());
+        Bitmap coverArt = song.getCoverArt();
+        if (coverArt == null) {
+            coverArtView.setImageResource(R.drawable.default_art);
+        } else {
+            coverArtView.setImageBitmap(coverArt);
+        }
 
         progressText = (TextView)findViewById(R.id.progress_text);
         songDurationText = (TextView)findViewById(R.id.song_duration_text);

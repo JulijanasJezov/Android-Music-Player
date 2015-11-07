@@ -1,6 +1,7 @@
 package com.jj.mysimpleplayer;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -63,7 +64,13 @@ public class SongAdapter extends BaseAdapter {
             songItem.titleView.setTag(position);
             songItem.titleView.setText(currentSong.getTitle());
             songItem.artistView.setText(currentSong.getArtist());
-            songItem.coverArtView.setImageBitmap(currentSong.getCoverArt());
+            Bitmap coverArt = currentSong.getCoverArt();
+            if (coverArt == null) {
+                songItem.coverArtView.setImageResource(R.drawable.default_art);
+            } else {
+                songItem.coverArtView.setImageBitmap(coverArt);
+            }
+
         }
 
         return convertView;

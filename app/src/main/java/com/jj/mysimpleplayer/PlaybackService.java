@@ -23,6 +23,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
     private MediaPlayer player;
     private ArrayList<Song> songLibrary;
     private int songPosition;
+    private boolean isPlayerStarted = false;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -62,6 +63,10 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
         songPosition = songPos;
     }
 
+    public int getCurrentSong() {
+        return songPosition;
+    }
+
     public void playSong() {
         player.reset();
 
@@ -84,8 +89,13 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
     }
 
     public void unpauseSong() {
-        player.seekTo(getCurrentPosition());
-        player.start();
+        if (!isPlayerStarted) {
+            playSong();
+        } else {
+            player.seekTo(getCurrentPosition());
+            player.start();
+        }
+
     }
 
     public void seekTo(int position) {
@@ -100,6 +110,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
             seekTo(getDuration());
             return false;
         }
+        isPlayerStarted = false;
         playSong();
 
         return true;
@@ -107,8 +118,9 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
     public boolean prevSong() {
         songPosition--;
+        isPlayerStarted = false;
 
-        if(songPosition <= 0) {
+        if(songPosition < 0) {
             songPosition++;
             playSong();
             return false;
@@ -140,6 +152,10 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
         return player.getDuration();
     }
 
+    public boolean isPlayerStarted() {
+        return isPlayerStarted;
+    }
+
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
         return false;
@@ -148,6 +164,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
     @Override
     public void onPrepared(MediaPlayer mp) {
         mp.start();
+        isPlayerStarted = true;
     }
 
     @Override
