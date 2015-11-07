@@ -10,7 +10,6 @@
         <item >Settings</item>
     </string-array>
     <string name="title_activity_player">PlayerActivity</string>
+    <string name="default_time">0:00</string>
 
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
 </resources>

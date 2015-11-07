@@ -18,6 +18,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
         MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener {
 
     private final IBinder playbackBinder = new PlaybackBinder();
+    private PlaybackServiceCallbacks playbackServiceCallbacks;
 
     private MediaPlayer player;
     private ArrayList<Song> songLibrary;
@@ -83,8 +84,39 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
     }
 
     public void unpauseSong() {
-        player.seekTo(player.getCurrentPosition());
+        player.seekTo(getCurrentPosition());
         player.start();
+    }
+
+    public void seekTo(int position) {
+        player.seekTo(position);
+    }
+
+    public boolean nextSong() {
+        songPosition++;
+
+        if(songPosition >= songLibrary.size()) {
+            songPosition--;
+            seekTo(getDuration());
+            return false;
+        }
+        playSong();
+
+        return true;
+    }
+
+    public boolean prevSong() {
+        songPosition--;
+
+        if(songPosition <= 0) {
+            songPosition++;
+            playSong();
+            return false;
+        }
+
+        playSong();
+
+        return true;
     }
 
     public boolean isPlaying() {
@@ -93,7 +125,19 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
     @Override
     public void onCompletion(MediaPlayer mp) {
+        if (playbackServiceCallbacks != null) {
+            playbackServiceCallbacks.nextSong();
+        } else {
+            nextSong();
+        }
+    }
 
+    public int getCurrentPosition(){
+        return player.getCurrentPosition();
+    }
+
+    public int getDuration() {
+        return player.getDuration();
     }
 
     @Override
@@ -118,5 +162,13 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
         PlaybackService getService() {
             return PlaybackService.this;
         }
+    }
+
+    public void setCallbacks(PlaybackServiceCallbacks callbacks) {
+        playbackServiceCallbacks = callbacks;
+    }
+
+    public void removeCallbacks() {
+        playbackServiceCallbacks = null;
     }
 }

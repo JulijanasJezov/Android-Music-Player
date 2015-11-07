@@ -34,6 +34,8 @@ import com.jj.mysimpleplayer.PlaybackService.PlaybackBinder;
 
 public class MainActivity extends AppCompatActivity  {
 
+    public final static String SONG_POSITION = "com.jj.mysimpleplayer.SONG_POS";
+
     private ActionBarDrawerToggle mDrawerToggle;
     private DrawerLayout mDrawerLayout;
     private String mActivityTitle;
@@ -259,6 +261,7 @@ public class MainActivity extends AppCompatActivity  {
         playbackService.playSong();
 
         Intent intent = new Intent(this, PlayerActivity.class);
+        intent.putExtra(SONG_POSITION, songPos);
         startActivity(intent);
     }
 }

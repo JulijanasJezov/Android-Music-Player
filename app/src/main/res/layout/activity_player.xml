@@ -24,8 +24,7 @@
             android:gravity="center"
             android:scrollHorizontally="true"
             android:ellipsize="end"
-            android:lines="1"
-            android:text="Song Title - Hello Hello"/>
+            android:lines="1"/>
 
         <TextView
             android:id="@+id/song_artist"
@@ -36,8 +35,7 @@
             android:gravity="center"
             android:scrollHorizontally="true"
             android:ellipsize="end"
-            android:lines="1"
-            android:text="Song Artist"/>
+            android:lines="1"/>
 
     </LinearLayout>
 
@@ -59,7 +57,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:layout_gravity="left"
             android:contentDescription="@string/cover_art_desc"
             android:src="@mipmap/ic_launcher"/>
     </LinearLayout>
@@ -73,11 +70,46 @@
         android:layout_weight=".40"
         android:layout_height="0dp">
 
-        <SeekBar
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/seekBar"
-            android:layout_gravity="center_horizontal" />
+            android:orientation="horizontal"
+            android:layout_height="30dp"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/progress_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight=".15"
+                android:textColor="#000000"
+                android:textSize="12sp"
+                android:gravity="start"
+                android:scrollHorizontally="true"
+                android:ellipsize="end"
+                android:lines="1"
+                android:text="@string/default_time"/>
+
+            <SeekBar
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight=".70"
+                android:id="@+id/song_seek_bar"
+                android:layout_gravity="center_horizontal" />
+
+            <TextView
+                android:id="@+id/song_duration_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight=".15"
+                android:textColor="#000000"
+                android:textSize="12sp"
+                android:gravity="end"
+                android:scrollHorizontally="true"
+                android:ellipsize="end"
+                android:lines="1"
+                android:text="@string/default_time"/>
+
+        </LinearLayout>
 
         <LinearLayout
             android:paddingLeft="@dimen/activity_horizontal_margin"
@@ -92,23 +124,22 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/prev_song"
-                android:gravity="left"
-                android:drawableLeft="@drawable/ic_prev"/>
+                android:onClick="prevSongClick"
+                android:text="Prev"/>
 
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/play_pause"
-                android:onClick="playPause"
-                android:gravity="center"
-                android:drawableStart="@drawable/ic_play_circle"/>
+                android:onClick="playPauseClick"
+                android:text="Play"/>
 
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/next_song"
-                android:gravity="right"
-                android:drawableRight="@drawable/ic_next" />
+                android:onClick="nextSongClick"
+                android:text="Next"/>
 
 
         </LinearLayout>
