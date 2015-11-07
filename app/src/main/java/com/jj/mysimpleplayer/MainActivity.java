@@ -25,7 +25,7 @@ import java.util.ArrayList;
 
 import com.jj.mysimpleplayer.PlaybackService.PlaybackBinder;
 
-public class MainActivity extends AppCompatActivity  {
+public class MainActivity extends AppCompatActivity implements PlaybackServiceCallbacks {
 
     public final static String SONG_POSITION = "com.jj.mysimpleplayer.SONG_POS";
     public final static String PLAY_REQUEST = "com.jj.mysimpleplayer.PLAY_REQ";
@@ -89,10 +89,10 @@ public class MainActivity extends AppCompatActivity  {
             PlaybackBinder binder = (PlaybackBinder)service;
 
             playbackService = binder.getService();
-
+            playbackService.setCallbacks(MainActivity.this);
             playbackService.setSongLibrary(songLibrary);
 
-            initMiniPlayerUI();
+            initMiniPlayerUI(false);
 
             playbackBound = true;
         }
@@ -124,6 +124,7 @@ public class MainActivity extends AppCompatActivity  {
     protected void onPause() {
         super.onPause();
 
+        playbackService.removeCallbacks();
         unbindService(playbackServiceConnection);
     }
 
@@ -186,13 +187,13 @@ public class MainActivity extends AppCompatActivity  {
         mDrawerLayout.setDrawerListener(mDrawerToggle);
     }
 
-    private void initMiniPlayerUI() {
+    private void initMiniPlayerUI(boolean isNextSong) {
         Song song = songLibrary.get(playbackService.getCurrentSong());
         TextView songTitle = (TextView)findViewById(R.id.current_song);
         songTitle.setText(song.getTitle());
 
         Button playPauseButton = (Button)findViewById(R.id.play_pause);
-        playPauseButton.setText(playbackService.isPlaying() ? "Pause" : "Play");
+        playPauseButton.setText(playbackService.isPlaying() || isNextSong ? "Pause" : "Play");
 
     }
 
@@ -221,6 +222,13 @@ public class MainActivity extends AppCompatActivity  {
         } else {
             playPauseButton.setText("Pause");
             playbackService.unpauseSong();
+        }
+    }
+
+    @Override
+    public void nextSong() {
+        if (playbackService.nextSong()) {
+            initMiniPlayerUI(true);
         }
     }
 }

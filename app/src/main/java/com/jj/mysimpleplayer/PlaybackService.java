@@ -110,6 +110,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
             seekTo(getDuration());
             return false;
         }
+        
         isPlayerStarted = false;
         playSong();
 
