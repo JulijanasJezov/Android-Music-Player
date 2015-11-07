@@ -45,17 +45,10 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
 
         if(playbackIntent==null){
             playbackIntent = new Intent(this, PlaybackService.class);
-            bindService(playbackIntent, playbackServiceConnection, Context.BIND_AUTO_CREATE);
         }
 
-        initUI();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
         bindService(playbackIntent, playbackServiceConnection, Context.BIND_AUTO_CREATE);
+        initUI();
     }
 
     private ServiceConnection playbackServiceConnection = new ServiceConnection(){
@@ -86,9 +79,12 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
     }
 
     public void playPauseClick(View view) {
+        TextView playPauseButton = (TextView) view;
         if (playbackService.isPlaying()) {
+            playPauseButton.setText("Play");
             pause();
         }else{
+            playPauseButton.setText("Pause");
             start();
         }
     }
@@ -104,8 +100,7 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
     @Override
     public void nextSong(){
         if (playbackService.nextSong()) {
-            songSeekBar.setMax(UNSET_MAX_DURATION);
-            songDurationText.setText(Helpers.getFormattedTime(UNSET_MAX_DURATION));
+            setSongDuration(UNSET_MAX_DURATION);
             songPosition++;
             initUI();
         }
@@ -113,13 +108,11 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
 
     public void prevSong(){
         if (playbackService.prevSong()) {
-            songSeekBar.setMax(UNSET_MAX_DURATION);
-            songDurationText.setText(Helpers.getFormattedTime(UNSET_MAX_DURATION));
+            setSongDuration(UNSET_MAX_DURATION);
             songPosition--;
             initUI();
         }
     }
-
 
     Runnable run = new Runnable() {
         @Override public void run() {
@@ -130,9 +123,7 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
     public void updateSongSeekBar() {
         if (playbackBound) {
             if (songSeekBar.getMax() == UNSET_MAX_DURATION && isPlaying()) {
-                int duration = getDuration();
-                songSeekBar.setMax(duration);
-                songDurationText.setText(Helpers.getFormattedTime(duration));
+                setSongDuration(getDuration());
             }
 
             int currentPos = getCurrentPosition();
@@ -226,5 +217,10 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
         songSeekBar = (SeekBar)findViewById(R.id.song_seek_bar);
         songSeekBar.setOnSeekBarChangeListener(new seekBarListener());
         updateSongSeekBar();
+    }
+
+    private void setSongDuration(int dur) {
+        songSeekBar.setMax(dur);
+        songDurationText.setText(Helpers.getFormattedTime(dur));
     }
 }
