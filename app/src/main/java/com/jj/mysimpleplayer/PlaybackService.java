@@ -26,7 +26,6 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
     private ArrayList<Song> songLibrary;
     private int songPosition;
     private boolean isPlayerStarted = false;
-    private boolean autoPlay = true;
     public PlayerNotification playerNotification;
 
 
@@ -146,25 +145,17 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
         return true;
     }
 
-    public void setAutoPlay(boolean ap) {
-        autoPlay = ap;
-    }
-
     public boolean isPlaying() {
         return player.isPlaying();
     }
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-        if (autoPlay) {
             if (playbackServiceCallbacks != null) {
                 playbackServiceCallbacks.nextSong();
             } else {
                 nextSong();
             }
-        } else {
-            autoPlay = true;
-        }
     }
 
     public int getCurrentPosition(){
