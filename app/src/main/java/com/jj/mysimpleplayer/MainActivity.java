@@ -135,6 +135,9 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
         if(!playbackService.isPlaying()) {
             stopService(playbackIntent);
             playbackService = null;
+        } else {
+            int songPos = playbackService.getCurrentSong();
+            playbackService.playerNotification.showNotification(playbackService, songLibrary.get(songPos));
         }
     }
 
@@ -200,6 +203,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
     public void playSong(View view) {
         // Get song position from a song title view tag
         int songPos = Integer.parseInt(view.findViewById(R.id.song_title).getTag().toString());
+        playbackService.setAutoPlay(false);
         openPlayerIntent(songPos, true);
     }
 

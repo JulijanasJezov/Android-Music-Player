@@ -12,6 +12,8 @@ import android.os.PowerManager;
 import android.provider.MediaStore;
 import android.util.Log;
 
+import com.jj.mysimpleplayer.constants.Constants;
+
 import java.util.ArrayList;
 
 public class PlaybackService extends Service implements MediaPlayer.OnPreparedListener,
@@ -24,6 +26,9 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
     private ArrayList<Song> songLibrary;
     private int songPosition;
     private boolean isPlayerStarted = false;
+    private boolean autoPlay = true;
+    public PlayerNotification playerNotification;
+
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -32,6 +37,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
     @Override
     public boolean onUnbind(Intent intent) {
+        playerNotification.releaseSession();
         return false;
     }
 
@@ -41,8 +47,16 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
         songPosition = 0;
         player = new MediaPlayer();
+        playerNotification = new PlayerNotification();
 
         setupMusicPlayer();
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        playerNotification.initSession(this);
+        playerNotification.handleIntent(intent);
+        return super.onStartCommand(intent, flags, startId);
     }
 
     public void setupMusicPlayer () {
@@ -132,16 +146,24 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
         return true;
     }
 
+    public void setAutoPlay(boolean ap) {
+        autoPlay = ap;
+    }
+
     public boolean isPlaying() {
         return player.isPlaying();
     }
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-        if (playbackServiceCallbacks != null) {
-            playbackServiceCallbacks.nextSong();
+        if (autoPlay) {
+            if (playbackServiceCallbacks != null) {
+                playbackServiceCallbacks.nextSong();
+            } else {
+                nextSong();
+            }
         } else {
-            nextSong();
+            autoPlay = true;
         }
     }
 
@@ -150,7 +172,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
     }
 
     public int getDuration() {
-        return player.getDuration();
+        return player.isPlaying() ? player.getDuration() : Constants.UNSET_MAX_DURATION;
     }
 
     public boolean isPlayerStarted() {

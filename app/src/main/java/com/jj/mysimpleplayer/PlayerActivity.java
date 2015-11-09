@@ -19,9 +19,9 @@ import android.widget.MediaController;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-public class PlayerActivity extends Activity implements MediaController.MediaPlayerControl, PlaybackServiceCallbacks {
+import com.jj.mysimpleplayer.constants.Constants;
 
-    public final static int UNSET_MAX_DURATION = 100;
+public class PlayerActivity extends Activity implements MediaController.MediaPlayerControl, PlaybackServiceCallbacks {
 
     public PlaybackService playbackService;
     private Intent playbackIntent;
@@ -114,7 +114,7 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
     @Override
     public void nextSong(){
         if (playbackService.nextSong()) {
-            setSongDuration(UNSET_MAX_DURATION);
+            setSongDuration(Constants.UNSET_MAX_DURATION);
             songPosition++;
             playPauseButton.setText("Pause");
             initUI();
@@ -123,7 +123,7 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
 
     public void prevSong(){
         if (playbackService.prevSong()) {
-            setSongDuration(UNSET_MAX_DURATION);
+            setSongDuration(Constants.UNSET_MAX_DURATION);
             songPosition--;
             playPauseButton.setText("Pause");
             initUI();
@@ -138,7 +138,7 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
 
     public void updateSongSeekBar() {
         if (playbackBound && playbackService.isPlayerStarted()) {
-            if (songSeekBar.getMax() == UNSET_MAX_DURATION) {
+            if (songSeekBar.getMax() == Constants.UNSET_MAX_DURATION) {
                 setSongDuration(getDuration());
             }
 
