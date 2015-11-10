@@ -13,10 +13,9 @@
     <string name="title_activity_player">PlayerActivity</string>
     <string name="default_time">0:00</string>
     <string name="mini_player">Playing now</string>
-    <string name="title_activity_new_playlist">newPlaylistActivity</string>
+    <string name="title_activity_new_playlist">Add Playlist</string>
 
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
-
+    <string name="create">Create</string>
+    <string name="playlist_name">Playlist Name</string>
 
 </resources>

@@ -1,0 +1,20 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/playlist_item"
+    android:orientation="vertical"
+    android:padding="5dp" >
+
+        <TextView
+            android:id="@+id/playlist_name"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#000000"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:scrollHorizontally="true"
+            android:ellipsize="end"
+            android:lines="1"/>
+
+</LinearLayout>
