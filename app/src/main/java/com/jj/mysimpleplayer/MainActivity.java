@@ -68,8 +68,8 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    protected void onResume() {
+        super.onResume();
 
         if(playbackIntent==null){
             playbackIntent = new Intent(this, PlaybackService.class);
@@ -123,7 +123,9 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
     protected void onPause() {
         super.onPause();
 
-        playbackService.removeCallbacks();
+        if (playbackService != null) {
+            playbackService.removeCallbacks();
+        }
         unbindService(playbackServiceConnection);
     }
 
