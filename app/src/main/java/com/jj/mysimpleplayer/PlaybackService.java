@@ -1,15 +1,29 @@
 package com.jj.mysimpleplayer;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ContentUris;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.session.MediaSessionManager;
 import android.net.Uri;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.os.RemoteException;
 import android.provider.MediaStore;
+import android.support.v4.media.session.MediaControllerCompat;
+import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
 import com.jj.mysimpleplayer.constants.Constants;
@@ -26,7 +40,14 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
     private ArrayList<Song> songLibrary;
     private int songPosition;
     private boolean isPlayerStarted = false;
-    public PlayerNotification playerNotification;
+
+    private MediaSessionManager sessionManager;
+    private MediaSessionCompat mediaSession;
+    private MediaControllerCompat mediaController;
+    private NotificationManager notificationManager;
+    private boolean isDeleteReceiverRegistered = false;
+    private boolean isNotificationShown = false;
+    private Handler notificationHandler = new Handler();
 
 
     @Override
@@ -36,7 +57,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
     @Override
     public boolean onUnbind(Intent intent) {
-        playerNotification.releaseSession();
+        mediaSession.release();
         return false;
     }
 
@@ -46,15 +67,16 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
         songPosition = 0;
         player = new MediaPlayer();
-        playerNotification = new PlayerNotification();
 
         setupMusicPlayer();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        playerNotification.initSession(this);
-        playerNotification.handleIntent(intent);
+        if (sessionManager == null) initSession();
+
+        handleIntent(intent);
+        checkNotificationStatus();
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -151,11 +173,12 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-            if (playbackServiceCallbacks != null) {
-                playbackServiceCallbacks.nextSong();
-            } else {
-                nextSong();
-            }
+        if (playbackServiceCallbacks != null) {
+            playbackServiceCallbacks.nextSong();
+        } else {
+            nextSong();
+            showNotification();
+        }
     }
 
     public int getCurrentPosition(){
@@ -185,6 +208,11 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
     public void onDestroy() {
         super.onDestroy();
 
+        if (isDeleteReceiverRegistered) {
+            unregisterReceiver(deleteNotificationReceiver);
+        }
+
+        notificationHandler.removeCallbacks(maintainNotificationStatus);
         player.reset();
         player.release();
     }
@@ -201,5 +229,162 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
     public void removeCallbacks() {
         playbackServiceCallbacks = null;
+    }
+
+    // Notification
+
+    public void handleIntent( Intent intent ) {
+        if( intent == null || intent.getAction() == null )
+            return;
+
+        String action = intent.getAction();
+
+        switch (action) {
+            case Constants.NOTIFICATION_PLAY:
+                mediaController.getTransportControls().play();
+                break;
+            case Constants.NOTIFICATION_PAUSE:
+                mediaController.getTransportControls().pause();
+                break;
+            case Constants.NOTIFICATION_PREV:
+                mediaController.getTransportControls().skipToPrevious();
+                break;
+            case Constants.NOTIFICATION_NEXT:
+                mediaController.getTransportControls().skipToNext();
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void buildNotification( NotificationCompat.Action action) {
+        Intent deletedIntent = new Intent(Constants.NOTIFICATION_DELETED);
+        PendingIntent deletedPendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, deletedIntent, 0);
+        registerReceiver(deleteNotificationReceiver, new IntentFilter(Constants.NOTIFICATION_DELETED));
+        isDeleteReceiverRegistered = true;
+
+        Intent mainActivityIntent = new Intent(getApplicationContext(), MainActivity.class);
+
+        mainActivityIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+                | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+        PendingIntent mainActivityPendingIntent = PendingIntent.getActivity(getApplicationContext(), 0,
+                mainActivityIntent, 0);
+
+        boolean isCloseable = action.title == "Pause";
+
+        Song currentSong = songLibrary.get(songPosition);
+
+        Bitmap coverArt = currentSong.getCoverArt() != null ? currentSong.getCoverArt()
+                : BitmapFactory.decodeResource(getResources(), R.drawable.default_art);
+
+        int[] lockScreenActions = {0, 1, 2};
+
+        Notification mediaStyleNotification = new NotificationCompat.Builder(this)
+                .setVisibility(Notification.VISIBILITY_PUBLIC)
+                .setDeleteIntent(deletedPendingIntent)
+                .setContentIntent(mainActivityPendingIntent)
+                .setSmallIcon(R.drawable.default_art)
+                .setContentTitle(currentSong.getTitle())
+                .setContentText(currentSong.getArtist())
+                .setLargeIcon(coverArt)
+                .setStyle(new NotificationCompat.MediaStyle()
+                        .setShowActionsInCompactView(lockScreenActions)
+                        .setMediaSession(mediaSession.getSessionToken()))
+                .addAction(generateAction(android.R.drawable.ic_media_previous, "Previous", Constants.NOTIFICATION_PREV))
+                .addAction(action)
+                .addAction(generateAction(android.R.drawable.ic_media_next, "Next", Constants.NOTIFICATION_NEXT))
+                .setOngoing(isCloseable)
+                .build();
+
+        notificationManager = (NotificationManager) getSystemService( Context.NOTIFICATION_SERVICE);
+        mediaStyleNotification.flags |= Notification.FLAG_AUTO_CANCEL;
+        notificationManager.notify(1, mediaStyleNotification);
+        isNotificationShown = true;
+    }
+
+    private NotificationCompat.Action generateAction(int icon, String title, String intentAction ) {
+        Intent intent = new Intent( getApplicationContext(), PlaybackService.class );
+        intent.setAction( intentAction );
+        PendingIntent pendingIntent = PendingIntent.getService(getApplicationContext(), 1, intent, 0);
+        return new NotificationCompat.Action.Builder( icon, title, pendingIntent ).build();
+    }
+
+    public void initSession() {
+        sessionManager = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
+        mediaSession = new MediaSessionCompat(getApplicationContext(), "media session", null, null);
+        try {
+            mediaController = new MediaControllerCompat(getApplicationContext(), mediaSession.getSessionToken());
+        } catch (RemoteException ex) {
+            Log.d("MediaControllerInit", "Error");
+        }
+
+        mediaSession.setActive(true);
+        mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
+
+        mediaSession.setCallback(new MediaSessionCompat.Callback() {
+            @Override
+            public void onPlay() {
+                super.onPlay();
+                unpauseSong();
+                buildNotification(generateAction(android.R.drawable.ic_media_pause, "Pause", Constants.NOTIFICATION_PAUSE));
+            }
+
+            @Override
+            public void onPause() {
+                super.onPause();
+                pauseSong();
+                buildNotification(generateAction(android.R.drawable.ic_media_play, "Play", Constants.NOTIFICATION_PLAY));
+            }
+
+            @Override
+            public void onSkipToNext() {
+                super.onSkipToNext();
+                nextSong();
+                buildNotification(generateAction(android.R.drawable.ic_media_pause, "Pause", Constants.NOTIFICATION_PAUSE));
+            }
+
+            @Override
+            public void onSkipToPrevious() {
+                super.onSkipToPrevious();
+                prevSong();
+                buildNotification(generateAction(android.R.drawable.ic_media_pause, "Pause", Constants.NOTIFICATION_PAUSE));
+            }
+        });
+    }
+
+    public void showNotification() {
+        buildNotification(generateAction(android.R.drawable.ic_media_pause, "Pause", Constants.NOTIFICATION_PAUSE));
+    }
+
+    public void closeNotification() {
+        if (notificationManager != null) {
+            notificationManager.cancel(1);
+            isNotificationShown = false;
+        }
+    }
+
+    private final BroadcastReceiver deleteNotificationReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            isNotificationShown = false;
+            Intent playbackService = new Intent(getApplicationContext(), PlaybackService.class);
+            stopService(playbackService);
+        }
+    };
+
+    Runnable maintainNotificationStatus = new Runnable() {
+        @Override public void run() {
+            checkNotificationStatus();
+        }
+    };
+
+    public void checkNotificationStatus() {
+        if (player.isPlaying() && playbackServiceCallbacks == null &&  !isNotificationShown) {
+            showNotification();
+        } else if (playbackServiceCallbacks != null && isNotificationShown) {
+            closeNotification();
+        }
+        notificationHandler.postDelayed(maintainNotificationStatus, 1000);
     }
 }

@@ -119,26 +119,31 @@
             android:layout_height="match_parent"
             android:gravity="center">
 
-            <Button
+            <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/prev_song"
                 android:onClick="prevSongClick"
-                android:text="Prev"/>
+                android:background="@drawable/round_button"
+                android:src="@android:drawable/ic_media_previous"/>
 
-            <Button
+            <ImageButton
+                android:layout_marginEnd="20dp"
+                android:layout_marginStart="20dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/play_pause"
                 android:onClick="playPauseClick"
-                android:text="Pause"/>
+                android:background="@drawable/round_button"
+                android:src="@android:drawable/ic_media_pause"/>
 
-            <Button
+            <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/next_song"
                 android:onClick="nextSongClick"
-                android:text="Next"/>
+                android:background="@drawable/round_button"
+                android:src="@android:drawable/ic_media_next"/>
 
 
         </LinearLayout>

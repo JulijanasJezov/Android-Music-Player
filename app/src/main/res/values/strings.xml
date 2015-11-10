@@ -12,7 +12,7 @@
 
     <string name="title_activity_player">PlayerActivity</string>
     <string name="default_time">0:00</string>
-    <string name="play_button">Play</string>
+    <string name="mini_player">Playing now</string>
 
 
 </resources>

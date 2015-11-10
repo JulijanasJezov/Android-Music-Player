@@ -14,6 +14,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.MediaController;
 import android.widget.SeekBar;
@@ -32,7 +33,7 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
     private TextView progressText;
     private TextView songDurationText;
     private Boolean isPlayRequested;
-    private Button playPauseButton;
+    private ImageButton playPauseButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,9 +41,9 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
         setContentView(R.layout.activity_player);
 
         Intent intent = getIntent();
-        songPosition = intent.getIntExtra(MainActivity.SONG_POSITION, 0);
-        isPlayRequested = intent.getBooleanExtra(MainActivity.PLAY_REQUEST, false);
-        playPauseButton = (Button)findViewById(R.id.play_pause);
+        songPosition = intent.getIntExtra(Constants.SONG_POSITION, 0);
+        isPlayRequested = intent.getBooleanExtra(Constants.PLAY_REQUEST, false);
+        playPauseButton = (ImageButton)findViewById(R.id.play_pause);
     }
 
     @Override
@@ -67,13 +68,19 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
 
             playbackService.setCallbacks(PlayerActivity.this);
 
-            playPauseButton.setText(playbackService.isPlaying() || isPlayRequested ? "Pause" : "Play");
+            if (playbackService.isPlaying()) {
+                playPauseButton.setImageResource(android.R.drawable.ic_media_pause);
+            } else {
+                playPauseButton.setImageResource(android.R.drawable.ic_media_play);
+            }
 
             playbackBound = true;
 
             if (isPlayRequested) {
                 playbackService.setCurrentSong(songPosition);
                 playbackService.playSong();
+                playPauseButton.setImageResource(android.R.drawable.ic_media_pause);
+                isPlayRequested = false;
             }
 
         }
@@ -95,10 +102,10 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
 
     public void playPauseClick(View view) {
         if (playbackService.isPlaying()) {
-            playPauseButton.setText("Play");
+            playPauseButton.setImageResource(android.R.drawable.ic_media_play);
             pause();
         }else{
-            playPauseButton.setText("Pause");
+            playPauseButton.setImageResource(android.R.drawable.ic_media_pause);;
             start();
         }
     }
@@ -116,7 +123,7 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
         if (playbackService.nextSong()) {
             setSongDuration(Constants.UNSET_MAX_DURATION);
             songPosition++;
-            playPauseButton.setText("Pause");
+            playPauseButton.setImageResource(android.R.drawable.ic_media_pause);
             initUI();
         }
     }
@@ -125,7 +132,7 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
         if (playbackService.prevSong()) {
             setSongDuration(Constants.UNSET_MAX_DURATION);
             songPosition--;
-            playPauseButton.setText("Pause");
+            playPauseButton.setImageResource(android.R.drawable.ic_media_pause);
             initUI();
         }
     }

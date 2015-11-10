@@ -45,7 +45,7 @@
                     android:scrollHorizontally="true"
                     android:ellipsize="end"
                     android:lines="1"
-                    android:text="Playing now"
+                    android:text="@string/mini_player"
                     android:layout_height="wrap_content" />
 
                 <TextView
@@ -62,12 +62,14 @@
 
             </LinearLayout>
 
-            <Button
+            <ImageButton
+                android:layout_marginEnd="10dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/play_pause"
                 android:onClick="playPauseClick"
-                android:text="@string/play_button"/>
+                android:background="@drawable/round_button"
+                android:src="@android:drawable/ic_media_pause"/>
         </LinearLayout>
     </LinearLayout>
 
