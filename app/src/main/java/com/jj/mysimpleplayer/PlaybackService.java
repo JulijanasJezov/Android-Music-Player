@@ -40,6 +40,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
     private ArrayList<Song> songLibrary;
     private int songPosition;
     private boolean isPlayerStarted = false;
+    private boolean isAppClosed = false;
 
     private MediaSessionManager sessionManager;
     private MediaSessionCompat mediaSession;
@@ -231,6 +232,10 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
         playbackServiceCallbacks = null;
     }
 
+    public void setClosedAppFlag(boolean isClosed) {
+        isAppClosed = isClosed;
+    }
+
     // Notification
 
     public void handleIntent( Intent intent ) {
@@ -368,8 +373,10 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
         @Override
         public void onReceive(Context context, Intent intent) {
             isNotificationShown = false;
-            Intent playbackService = new Intent(getApplicationContext(), PlaybackService.class);
-            stopService(playbackService);
+            if (isAppClosed) {
+                Intent playbackService = new Intent(getApplicationContext(), PlaybackService.class);
+                stopService(playbackService);
+            }
         }
     };
 

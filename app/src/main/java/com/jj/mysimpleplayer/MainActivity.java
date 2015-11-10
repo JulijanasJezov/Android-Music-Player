@@ -65,7 +65,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
         if (savedInstanceState == null) {
             openFragment(0);
         }
-
     }
 
     @Override
@@ -90,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
             playbackService.setCallbacks(MainActivity.this);
             playbackService.setSongLibrary(songLibrary);
             playbackService.closeNotification();
+            playbackService.setClosedAppFlag(false);
 
             initMiniPlayerUI(false);
 
@@ -136,6 +136,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
             playbackService = null;
         } else {
             playbackService.showNotification();
+            playbackService.setClosedAppFlag(true);
         }
     }
 
