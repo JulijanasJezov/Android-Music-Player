@@ -16,7 +16,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -149,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
                 fragment = new LibraryFragment();
                 break;
             case 1:
-                fragment = new SettingsFragment();
+                fragment = new PlaylistsFragment();
                 break;
             default:
                 break;
@@ -205,7 +204,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
 
     }
 
-    public void playSong(View view) {
+    public void onSongClick(View view) {
         // Get song position from a song title view tag
         int songPos = Integer.parseInt(view.findViewById(R.id.song_title).getTag().toString());
         openPlayerIntent(songPos, true);

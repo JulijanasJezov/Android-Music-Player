@@ -2,11 +2,13 @@ package com.jj.mysimpleplayer;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -19,6 +21,7 @@ public class SongAdapter extends BaseAdapter {
         TextView titleView;
         TextView artistView;
         ImageView coverArtView;
+        LinearLayout songItem;
     }
 
     public SongAdapter(Context c, ArrayList<Song> songs){
@@ -52,6 +55,7 @@ public class SongAdapter extends BaseAdapter {
             songItem.titleView = (TextView)convertView.findViewById(R.id.song_title);
             songItem.artistView = (TextView)convertView.findViewById(R.id.song_artist);
             songItem.coverArtView = (ImageView)convertView.findViewById(R.id.cover_art);
+            songItem.songItem = (LinearLayout)convertView.findViewById(R.id.song_item);
 
             convertView.setTag(songItem);
         } else {
@@ -64,11 +68,18 @@ public class SongAdapter extends BaseAdapter {
             songItem.titleView.setTag(position);
             songItem.titleView.setText(currentSong.getTitle());
             songItem.artistView.setText(currentSong.getArtist());
+
             Bitmap coverArt = currentSong.getCoverArt();
             if (coverArt == null) {
                 songItem.coverArtView.setImageResource(R.drawable.default_art);
             } else {
                 songItem.coverArtView.setImageBitmap(coverArt);
+            }
+
+            if (currentSong.isSelected()) {
+                songItem.songItem.setBackgroundColor(Color.GRAY);
+            } else {
+                songItem.songItem.setBackgroundColor(Color.WHITE);
             }
 
         }

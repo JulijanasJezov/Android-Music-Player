@@ -8,6 +8,7 @@ public class Song {
     private String title;
     private String artist;
     private Bitmap coverArt;
+    private boolean isSelected;
 
     public Song(int songId, int albId, String songTitle, String songArtist, Bitmap songCoverArt) {
         id = songId;
@@ -15,6 +16,7 @@ public class Song {
         title = songTitle;
         artist = songArtist;
         coverArt = songCoverArt;
+        isSelected = false;
     }
 
     public int getId(){
@@ -31,6 +33,12 @@ public class Song {
     }
     public Bitmap getCoverArt() {
         return coverArt;
+    }
+    public boolean isSelected() {
+        return isSelected;
+    }
+    public void setSelected(boolean selected) {
+        isSelected = selected;
     }
 
 }

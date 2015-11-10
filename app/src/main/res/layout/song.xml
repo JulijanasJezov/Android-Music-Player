@@ -2,7 +2,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:onClick="playSong"
+    android:onClick="onSongClick"
+    android:id="@+id/song_item"
     android:orientation="horizontal"
     android:padding="5dp" >
 
