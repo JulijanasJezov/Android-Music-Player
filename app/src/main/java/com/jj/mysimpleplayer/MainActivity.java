@@ -33,10 +33,13 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
     private ListView mDrawerList;
     private String[] sideNavItems;
     public static ArrayList<Song> songLibrary;
+    public static ArrayList<Song> playlistSongs;
 
     public PlaybackService playbackService;
     private Intent playbackIntent;
     private boolean playbackBound = false;
+
+    public static boolean isPlaylistChosen = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,9 +89,14 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
 
             playbackService = binder.getService();
             playbackService.setCallbacks(MainActivity.this);
-            playbackService.setSongLibrary(songLibrary);
             playbackService.closeNotification();
             playbackService.setClosedAppFlag(false);
+
+            if (isPlaylistChosen) {
+                playbackService.setSongLibrary(playlistSongs);
+            } else {
+                playbackService.setSongLibrary(songLibrary);
+            }
 
             initMiniPlayerUI(false);
 
@@ -191,20 +199,34 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
     }
 
     private void initMiniPlayerUI(boolean isNextSong) {
-        Song song = songLibrary.get(playbackService.getCurrentSong());
+        Song song;
+        if (isPlaylistChosen) {
+            song = playlistSongs.get(playbackService.getCurrentSong());
+        } else {
+            song = songLibrary.get(playbackService.getCurrentSong());
+        }
         TextView songTitle = (TextView)findViewById(R.id.current_song);
         songTitle.setText(song.getTitle());
 
         ImageButton playPauseButton = (ImageButton)findViewById(R.id.play_pause);
         if (playbackService.isPlaying() || isNextSong) {
-            playPauseButton.setImageResource(android.R.drawable.ic_media_pause);
+            playPauseButton.setImageResource(R.drawable.ic_pause);
         } else {
-            playPauseButton.setImageResource(android.R.drawable.ic_media_play);
+            playPauseButton.setImageResource(R.drawable.ic_play);
         }
 
     }
 
     public void onSongClick(View view) {
+        Fragment f = getFragmentManager().findFragmentById(R.id.frame_container);
+
+        if (f instanceof LibraryFragment) {
+            isPlaylistChosen = false;
+            playbackService.setSongLibrary(songLibrary);
+        }else if (isPlaylistChosen) {
+            playbackService.setSongLibrary(playlistSongs);
+        }
+
         // Get song position from a song title view tag
         int songPos = Integer.parseInt(view.findViewById(R.id.song_title).getTag().toString());
         openPlayerIntent(songPos, true);
@@ -224,10 +246,10 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
     public void playPauseClick(View view) {
         ImageButton playPauseButton = (ImageButton) view;
         if (playbackService.isPlaying()) {
-            playPauseButton.setImageResource(android.R.drawable.ic_media_play);
+            playPauseButton.setImageResource(R.drawable.ic_play);
             playbackService.pauseSong();
         } else {
-            playPauseButton.setImageResource(android.R.drawable.ic_media_pause);
+            playPauseButton.setImageResource(R.drawable.ic_pause);
             playbackService.unpauseSong();
         }
     }

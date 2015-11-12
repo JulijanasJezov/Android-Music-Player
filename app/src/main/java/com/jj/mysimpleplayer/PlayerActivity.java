@@ -69,9 +69,9 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
             playbackService.setCallbacks(PlayerActivity.this);
 
             if (playbackService.isPlaying()) {
-                playPauseButton.setImageResource(android.R.drawable.ic_media_pause);
+                playPauseButton.setImageResource(R.drawable.ic_pause);
             } else {
-                playPauseButton.setImageResource(android.R.drawable.ic_media_play);
+                playPauseButton.setImageResource(R.drawable.ic_play);
             }
 
             playbackBound = true;
@@ -79,7 +79,7 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
             if (isPlayRequested && songPosition != playbackService.getCurrentSong()) {
                 playbackService.setCurrentSong(songPosition);
                 playbackService.playSong();
-                playPauseButton.setImageResource(android.R.drawable.ic_media_pause);
+                playPauseButton.setImageResource(R.drawable.ic_pause);
                 isPlayRequested = false;
             }
 
@@ -106,11 +106,30 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
 
     public void playPauseClick(View view) {
         if (playbackService.isPlaying()) {
-            playPauseButton.setImageResource(android.R.drawable.ic_media_play);
+            playPauseButton.setImageResource(R.drawable.ic_play);
             pause();
         }else{
-            playPauseButton.setImageResource(android.R.drawable.ic_media_pause);;
+            playPauseButton.setImageResource(R.drawable.ic_pause);;
             start();
+        }
+    }
+
+    public void onShuffleClick(View view) {
+        if (playbackService.getShuffleStatus()) {
+            playbackService.setShuffle(false);
+        } else {
+            playbackService.setShuffle(true);
+        }
+
+        updateShuffleButton();
+    }
+
+    private void updateShuffleButton() {
+        ImageView shuffleButton = (ImageView) findViewById(R.id.shuffle);
+        if (playbackService.getShuffleStatus()) {
+            shuffleButton.setImageResource(R.drawable.ic_shuff);
+        } else {
+            shuffleButton.setImageResource(R.drawable.ic_shuff_off);
         }
     }
 
@@ -126,7 +145,7 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
     public void nextSong(){
         if (playbackService.nextSong()) {
             setSongDuration(Constants.UNSET_MAX_DURATION);
-            playPauseButton.setImageResource(android.R.drawable.ic_media_pause);
+            playPauseButton.setImageResource(R.drawable.ic_pause);
             initUI();
         }
     }
@@ -134,7 +153,7 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
     public void prevSong(){
         if (playbackService.prevSong()) {
             setSongDuration(Constants.UNSET_MAX_DURATION);
-            playPauseButton.setImageResource(android.R.drawable.ic_media_pause);
+            playPauseButton.setImageResource(R.drawable.ic_pause);
             initUI();
         }
     }
@@ -226,7 +245,13 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
     }
 
     private void initUI() {
-        Song song = MainActivity.songLibrary.get(playbackService.getCurrentSong());
+        Song song;
+        if (MainActivity.isPlaylistChosen) {
+            song = MainActivity.playlistSongs.get(playbackService.getCurrentSong());
+        } else {
+            song = MainActivity.songLibrary.get(playbackService.getCurrentSong());
+        }
+
         TextView songTitleView = (TextView)findViewById(R.id.song_title);
         songTitleView.setText(song.getTitle());
 
@@ -243,6 +268,8 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
 
         progressText = (TextView)findViewById(R.id.progress_text);
         songDurationText = (TextView)findViewById(R.id.song_duration_text);
+
+        updateShuffleButton();
 
         songSeekBar = (SeekBar)findViewById(R.id.song_seek_bar);
         songSeekBar.setOnSeekBarChangeListener(new seekBarListener());

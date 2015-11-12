@@ -69,7 +69,7 @@
                 android:id="@+id/play_pause"
                 android:onClick="playPauseClick"
                 android:background="@drawable/round_button"
-                android:src="@android:drawable/ic_media_pause"/>
+                android:src="@drawable/ic_pause"/>
         </LinearLayout>
     </LinearLayout>
 

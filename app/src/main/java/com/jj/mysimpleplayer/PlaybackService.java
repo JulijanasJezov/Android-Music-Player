@@ -29,6 +29,7 @@ import android.util.Log;
 import com.jj.mysimpleplayer.constants.Constants;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 public class PlaybackService extends Service implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener {
@@ -49,6 +50,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
     private boolean isDeleteReceiverRegistered = false;
     private boolean isNotificationShown = false;
     private Handler notificationHandler = new Handler();
+    private boolean shuffle = false;
 
 
     @Override
@@ -139,15 +141,24 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
     }
 
     public boolean nextSong() {
-        songPosition++;
+        if (shuffle) {
+            Random rand = new Random();
+            int currentSongPosition = songPosition;
+            while (songPosition == currentSongPosition) {
+                songPosition = rand.nextInt(songLibrary.size());
+            }
+        } else {
+            songPosition++;
+        }
+
+        isPlayerStarted = false;
 
         if(songPosition >= songLibrary.size()) {
             songPosition--;
-            seekTo(getDuration());
+            playSong();
             return false;
         }
-        
-        isPlayerStarted = false;
+
         playSong();
 
         return true;
@@ -234,6 +245,14 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
     public void setClosedAppFlag(boolean isClosed) {
         isAppClosed = isClosed;
+    }
+
+    public void setShuffle(boolean shuff) {
+        shuffle = shuff;
+    }
+
+    public boolean getShuffleStatus() {
+        return shuffle;
     }
 
     // Notification

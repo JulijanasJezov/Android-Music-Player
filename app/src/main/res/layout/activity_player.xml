@@ -119,33 +119,60 @@
             android:layout_height="match_parent"
             android:gravity="center">
 
-            <ImageButton
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:id="@+id/prev_song"
-                android:onClick="prevSongClick"
-                android:background="@drawable/round_button"
-                android:src="@android:drawable/ic_media_previous"/>
+                android:layout_weight=".1">
+            </LinearLayout>
 
-            <ImageButton
-                android:layout_marginEnd="20dp"
-                android:layout_marginStart="20dp"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:id="@+id/play_pause"
-                android:onClick="playPauseClick"
-                android:background="@drawable/round_button"
-                android:src="@android:drawable/ic_media_pause"/>
+                android:layout_weight=".8"
+                android:gravity="center">
 
-            <ImageButton
-                android:layout_width="wrap_content"
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/prev_song"
+                    android:onClick="prevSongClick"
+                    android:background="@drawable/round_button"
+                    android:src="@drawable/ic_prev"/>
+
+                <ImageButton
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/play_pause"
+                    android:onClick="playPauseClick"
+                    android:background="@drawable/round_button"
+                    android:src="@drawable/ic_pause"/>
+
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/next_song"
+                    android:onClick="nextSongClick"
+                    android:background="@drawable/round_button"
+                    android:src="@drawable/ic_next"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:id="@+id/next_song"
-                android:onClick="nextSongClick"
-                android:background="@drawable/round_button"
-                android:src="@android:drawable/ic_media_next"/>
+                android:layout_weight=".1"
+                android:gravity="end">
 
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/shuffle"
+                    android:onClick="onShuffleClick"
+                    android:background="@drawable/round_button"
+                    android:src="@drawable/ic_shuff"/>
 
+            </LinearLayout>
         </LinearLayout>
 
     </LinearLayout>

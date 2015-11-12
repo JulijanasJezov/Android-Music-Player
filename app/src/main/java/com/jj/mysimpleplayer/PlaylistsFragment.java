@@ -41,10 +41,12 @@ public class PlaylistsFragment extends Fragment {
 
         dbHelper = new DatabaseHelper(rootView.getContext());
 
+        MainActivity.playlistSongs = new ArrayList<>();
         playlists = new ArrayList<>();
         getPlaylists();
 
         ListView playlistsView = (ListView)rootView.findViewById(R.id.playlists_list);
+        final ListView playlistSongsView = (ListView)rootView.findViewById(R.id.playlist_songs);
 
         // Populate library list with songs
         PlaylistAdapter playlistAdapter = new PlaylistAdapter(getActivity(), playlists);
@@ -64,10 +66,18 @@ public class PlaylistsFragment extends Fragment {
             public void onItemClick(AdapterView<?> av, View view, int position, long id) {
                 int playlistId = Integer.parseInt(view.findViewById(R.id.playlist_name).getTag().toString());
                 loadPlaylist(rootView.getContext(), playlistId);
+                SongAdapter playlistSongsAdapter = new SongAdapter(getActivity(), MainActivity.playlistSongs);
+                playlistSongsView.setAdapter(playlistSongsAdapter);
+                MainActivity.isPlaylistChosen = true;
             }
         });
 
         return rootView;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
     }
 
     private void addNewPlaylistClicked(View view) {
@@ -143,6 +153,8 @@ public class PlaylistsFragment extends Fragment {
 
             songsCursor.close();
         }
+
+        MainActivity.playlistSongs = songsPlaylist;
     }
 
     private void getPlaylists() {
