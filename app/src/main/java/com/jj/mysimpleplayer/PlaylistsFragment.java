@@ -13,6 +13,7 @@ import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -32,25 +33,37 @@ public class PlaylistsFragment extends Fragment {
 
     private DatabaseHelper dbHelper;
     private ArrayList<Playlist> playlists;
+    private int currentPlaylistId;
+    private View rootView;
+    private SongAdapter playlistSongsAdapter;
+    private PlaylistAdapter playlistAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        final View rootView = inflater.inflate(R.layout.fragment_playlists, container, false);
+        rootView = inflater.inflate(R.layout.fragment_playlists, container, false);
 
         dbHelper = new DatabaseHelper(rootView.getContext());
 
         MainActivity.playlistSongs = new ArrayList<>();
-        playlists = new ArrayList<>();
-        getPlaylists();
 
+        currentPlaylistId = 0;
+
+        return rootView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        playlists = Helpers.getPlaylists(dbHelper);
         ListView playlistsView = (ListView)rootView.findViewById(R.id.playlists_list);
-        final ListView playlistSongsView = (ListView)rootView.findViewById(R.id.playlist_songs);
 
         // Populate library list with songs
-        PlaylistAdapter playlistAdapter = new PlaylistAdapter(getActivity(), playlists);
+        playlistAdapter = new PlaylistAdapter(getActivity(), playlists);
         playlistsView.setAdapter(playlistAdapter);
+
+        final ListView playlistSongsView = (ListView)rootView.findViewById(R.id.playlist_songs);
 
         LinearLayout addNewPlaylist = (LinearLayout) rootView.findViewById(R.id.add_new_playlist_layout);
         addNewPlaylist.setOnClickListener(new View.OnClickListener() {
@@ -66,18 +79,49 @@ public class PlaylistsFragment extends Fragment {
             public void onItemClick(AdapterView<?> av, View view, int position, long id) {
                 int playlistId = Integer.parseInt(view.findViewById(R.id.playlist_name).getTag().toString());
                 loadPlaylist(rootView.getContext(), playlistId);
-                SongAdapter playlistSongsAdapter = new SongAdapter(getActivity(), MainActivity.playlistSongs);
+                playlistSongsAdapter = new SongAdapter(getActivity(), MainActivity.playlistSongs);
                 playlistSongsView.setAdapter(playlistSongsAdapter);
-                MainActivity.isPlaylistChosen = true;
+                currentPlaylistId = playlistId;
             }
         });
 
-        return rootView;
     }
 
     @Override
     public void onPause() {
         super.onPause();
+    }
+
+    public void onDeletePlaylistClick(View view) {
+        View v = (View)view.getParent();
+        int playlistId = Integer.parseInt(v.findViewById(R.id.playlist_name).getTag().toString());
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        db.delete(SongsTable.SongsTableEntry.TABLE_NAME, SongsTable.SongsTableEntry.PLAYLIST_ID + "=" + playlistId, null);
+        db.delete(PlaylistTable.PlaylistTableEntry.TABLE_NAME, PlaylistTable.PlaylistTableEntry._ID + "=" + playlistId, null);
+
+        int indexOfPlaylist = 0;
+
+        for (Playlist pl : playlists) {
+            if (pl.getId() == playlistId) {
+                break;
+            }
+
+            indexOfPlaylist++;
+        }
+
+        playlists.remove(indexOfPlaylist);
+
+        if (currentPlaylistId == playlistId) {
+            MainActivity.playlistSongs.clear();
+            MainActivity.isPlaylistChosen = false;
+            playlistSongsAdapter.notifyDataSetChanged();
+            MainActivity.playbackService.stopSong();
+            MainActivity.playbackService.setSongLibrary(MainActivity.songLibrary);
+            MainActivity.playbackService.setCurrentSong(0);
+        }
+
+        playlistAdapter.notifyDataSetChanged();
     }
 
     private void addNewPlaylistClicked(View view) {
@@ -144,10 +188,12 @@ public class PlaylistsFragment extends Fragment {
                         if (coverArt != null) {
                             fetchedImages.put(albumId, coverArt);
                         }
-                    } catch (Exception ex) { }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
                 }
 
-                songsPlaylist.add(new Song(songId, albumId, title, artist, null));
+                songsPlaylist.add(new Song(songId, albumId, title, artist, coverArt));
             }
             while (songsCursor.moveToNext());
 
@@ -155,43 +201,5 @@ public class PlaylistsFragment extends Fragment {
         }
 
         MainActivity.playlistSongs = songsPlaylist;
-    }
-
-    private void getPlaylists() {
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-
-        String[] projection = {
-                PlaylistTable.PlaylistTableEntry._ID,
-                PlaylistTable.PlaylistTableEntry.PLAYLIST_NAME,
-        };
-
-        String sortOrder = PlaylistTable.PlaylistTableEntry.PLAYLIST_NAME + " ASC";
-
-        Cursor playlistsCursor = db.query(
-                PlaylistTable.PlaylistTableEntry.TABLE_NAME,
-                projection,
-                null,
-                null,
-                null,
-                null,
-                sortOrder
-        );
-
-        if(playlistsCursor != null && playlistsCursor.moveToFirst()){
-            int nameColumn = playlistsCursor.getColumnIndex
-                    (PlaylistTable.PlaylistTableEntry.PLAYLIST_NAME);
-            int idColumn = playlistsCursor.getColumnIndex
-                    (PlaylistTable.PlaylistTableEntry._ID);
-
-            do {
-                int thisId = playlistsCursor.getInt(idColumn);
-                String name = playlistsCursor.getString(nameColumn);
-
-                playlists.add(new Playlist(thisId, name));
-            }
-            while (playlistsCursor.moveToNext());
-
-            playlistsCursor.close();
-        }
     }
 }

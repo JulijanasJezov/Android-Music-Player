@@ -122,6 +122,11 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
         player.prepareAsync();
     }
 
+    public void stopSong() {
+        player.stop();
+        isPlayerStarted = false;
+    }
+
     public void pauseSong(){
         player.pause();
     }
@@ -155,8 +160,6 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
         if(songPosition >= songLibrary.size()) {
             songPosition--;
-            playSong();
-            return false;
         }
 
         playSong();
@@ -185,6 +188,10 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
     @Override
     public void onCompletion(MediaPlayer mp) {
+        if (songPosition == songLibrary.size() - 1) {
+            return;
+        }
+
         if (playbackServiceCallbacks != null) {
             playbackServiceCallbacks.nextSong();
         } else {

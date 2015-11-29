@@ -3,18 +3,29 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:id="@+id/playlist_item"
-    android:orientation="vertical"
-    android:padding="5dp" >
+    android:orientation="horizontal"
+    android:padding="5dp"
+    android:gravity="center"
+    android:descendantFocusability="blocksDescendants">
 
-        <TextView
-            android:id="@+id/playlist_name"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:textColor="#000000"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:scrollHorizontally="true"
-            android:ellipsize="end"
-            android:lines="1"/>
+    <TextView
+        android:id="@+id/playlist_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight=".9"
+        android:textColor="#000000"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:scrollHorizontally="true"
+        android:ellipsize="end"
+        android:lines="1"/>
 
+    <ImageButton
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight=".1"
+        android:src="@drawable/ic_remove_black_24dp"
+        android:background="@drawable/round_button"
+        android:contentDescription="@string/descr_overflow_button"
+        android:onClick="onDeletePlaylistClick"/>
 </LinearLayout>

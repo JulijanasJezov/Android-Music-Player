@@ -4,9 +4,13 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.MediaStore;
+
+import com.jj.mysimpleplayer.database.DatabaseHelper;
+import com.jj.mysimpleplayer.database.PlaylistTable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -91,5 +95,47 @@ public class Helpers {
         }
 
         return songLibrary;
+    }
+
+    public static ArrayList<Playlist> getPlaylists(DatabaseHelper dbHelper) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        ArrayList<Playlist> playlists = new ArrayList<>();
+
+        String[] projection = {
+                PlaylistTable.PlaylistTableEntry._ID,
+                PlaylistTable.PlaylistTableEntry.PLAYLIST_NAME,
+        };
+
+        String sortOrder = PlaylistTable.PlaylistTableEntry.PLAYLIST_NAME + " ASC";
+
+        Cursor playlistsCursor = db.query(
+                PlaylistTable.PlaylistTableEntry.TABLE_NAME,
+                projection,
+                null,
+                null,
+                null,
+                null,
+                sortOrder
+        );
+
+        if(playlistsCursor != null && playlistsCursor.moveToFirst()){
+            int nameColumn = playlistsCursor.getColumnIndex
+                    (PlaylistTable.PlaylistTableEntry.PLAYLIST_NAME);
+            int idColumn = playlistsCursor.getColumnIndex
+                    (PlaylistTable.PlaylistTableEntry._ID);
+
+            do {
+                int thisId = playlistsCursor.getInt(idColumn);
+                String name = playlistsCursor.getString(nameColumn);
+
+                playlists.add(new Playlist(thisId, name));
+            }
+            while (playlistsCursor.moveToNext());
+
+            playlistsCursor.close();
+        }
+
+        return playlists;
     }
 }

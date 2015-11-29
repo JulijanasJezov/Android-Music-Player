@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
     public static ArrayList<Song> songLibrary;
     public static ArrayList<Song> playlistSongs;
 
-    public PlaybackService playbackService;
+    public static PlaybackService playbackService;
     private Intent playbackIntent;
     private boolean playbackBound = false;
 
@@ -214,7 +214,12 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
         } else {
             playPauseButton.setImageResource(R.drawable.ic_play);
         }
+    }
 
+    public void onDeletePlaylistClick(View view) {
+        Fragment f = getFragmentManager().findFragmentById(R.id.frame_container);
+        PlaylistsFragment playlistsFragment = (PlaylistsFragment)f;
+        playlistsFragment.onDeletePlaylistClick(view);
     }
 
     public void onSongClick(View view) {
@@ -223,7 +228,8 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
         if (f instanceof LibraryFragment) {
             isPlaylistChosen = false;
             playbackService.setSongLibrary(songLibrary);
-        }else if (isPlaylistChosen) {
+        }else {
+            isPlaylistChosen = true;
             playbackService.setSongLibrary(playlistSongs);
         }
 

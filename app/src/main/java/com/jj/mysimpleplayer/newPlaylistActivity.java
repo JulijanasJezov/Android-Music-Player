@@ -10,6 +10,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.jj.mysimpleplayer.database.DatabaseHelper;
 import com.jj.mysimpleplayer.database.PlaylistTable;
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 public class NewPlaylistActivity extends AppCompatActivity {
 
     private ArrayList<Song> playlist;
+    private ArrayList<Playlist> existingPlaylists;
     SongAdapter songAdapter;
     DatabaseHelper dbHelper;
 
@@ -37,6 +39,7 @@ public class NewPlaylistActivity extends AppCompatActivity {
 
         dbHelper = new DatabaseHelper(getApplicationContext());
 
+        existingPlaylists = Helpers.getPlaylists(dbHelper);
     }
 
     @Override
@@ -75,9 +78,25 @@ public class NewPlaylistActivity extends AppCompatActivity {
     }
 
     private void createNewPlaylist() {
+        String toastText = null;
         EditText playlistNameText = (EditText)findViewById(R.id.playlist_name);
         String playlistName = playlistNameText.getText().toString();
-        if (playlistName.isEmpty() || playlist.isEmpty()) return;
+        if (playlistName.isEmpty() || playlist.isEmpty())  {
+            toastText = "Name is required!";
+            Toast toast = Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_SHORT);
+            toast.show();
+            return;
+        }
+
+        // check if playlist name is unique
+        for (Playlist pl : existingPlaylists) {
+            if (pl.getName().toLowerCase().equals(playlistName.toLowerCase())) {
+                toastText = "Playlist " + playlistName + " already exists!";
+                Toast toast = Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_SHORT);
+                toast.show();
+                return;
+            }
+        }
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
@@ -103,6 +122,8 @@ public class NewPlaylistActivity extends AppCompatActivity {
                     null,
                     songValues);
         }
+
+        finish();
     }
 
     @Override
