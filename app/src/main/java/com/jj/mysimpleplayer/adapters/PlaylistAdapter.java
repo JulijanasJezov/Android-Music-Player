@@ -1,15 +1,14 @@
-package com.jj.mysimpleplayer;
+package com.jj.mysimpleplayer.adapters;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import com.jj.mysimpleplayer.R;
+import com.jj.mysimpleplayer.models.Playlist;
 
 import java.util.ArrayList;
 

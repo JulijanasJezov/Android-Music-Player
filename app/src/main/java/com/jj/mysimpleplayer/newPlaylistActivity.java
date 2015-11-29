@@ -12,6 +12,10 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.jj.mysimpleplayer.adapters.SongAdapter;
+import com.jj.mysimpleplayer.models.Playlist;
+import com.jj.mysimpleplayer.models.Song;
+import com.jj.mysimpleplayer.utility.Helpers;
 import com.jj.mysimpleplayer.database.DatabaseHelper;
 import com.jj.mysimpleplayer.database.PlaylistTable;
 import com.jj.mysimpleplayer.database.SongsTable;
@@ -20,7 +24,8 @@ import java.util.ArrayList;
 
 public class NewPlaylistActivity extends AppCompatActivity {
 
-    private ArrayList<Song> playlist;
+    private ArrayList<Song> playlist = new ArrayList<>();
+    private ArrayList<Song> songLibrary;
     private ArrayList<Playlist> existingPlaylists;
     SongAdapter songAdapter;
     DatabaseHelper dbHelper;
@@ -31,10 +36,14 @@ public class NewPlaylistActivity extends AppCompatActivity {
         setContentView(R.layout.activity_new_playlist);
 
         ListView playlistView = (ListView)findViewById(R.id.add_to_playlist_list);
-        playlist = new ArrayList<>();
+        songLibrary = MainActivity.songLibrary;
+
+        for (Song s : songLibrary) {
+            if (s.isSelected()) playlist.add(s);
+        }
 
         // Populate library list with songs
-        songAdapter = new SongAdapter(this, MainActivity.songLibrary);
+        songAdapter = new SongAdapter(this, songLibrary, true);
         playlistView.setAdapter(songAdapter);
 
         dbHelper = new DatabaseHelper(getApplicationContext());
@@ -123,18 +132,11 @@ public class NewPlaylistActivity extends AppCompatActivity {
                     songValues);
         }
 
-        finish();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        for (Song song  : playlist) {
-            int index = MainActivity.songLibrary.indexOf(song);
-            MainActivity.songLibrary.get(index).setSelected(false);
+        for (Song song : playlist) {
+            int index = songLibrary.indexOf(song);
+            songLibrary.get(index).setSelected(false);
         }
 
+        finish();
     }
-
 }

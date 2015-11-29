@@ -1,4 +1,4 @@
-package com.jj.mysimpleplayer;
+package com.jj.mysimpleplayer.adapters;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -11,11 +11,15 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.jj.mysimpleplayer.R;
+import com.jj.mysimpleplayer.models.Song;
+
 import java.util.ArrayList;
 
 public class SongAdapter extends BaseAdapter {
     private ArrayList<Song> songLibrary;
     private LayoutInflater songInflater;
+    private boolean isPlaylist;
 
     static class SongItem {
         TextView titleView;
@@ -24,9 +28,10 @@ public class SongAdapter extends BaseAdapter {
         LinearLayout songItem;
     }
 
-    public SongAdapter(Context c, ArrayList<Song> songs){
+    public SongAdapter(Context c, ArrayList<Song> songs, boolean playlist){
         songLibrary = songs;
         songInflater = LayoutInflater.from(c);
+        isPlaylist = playlist;
     }
 
     @Override
@@ -76,7 +81,7 @@ public class SongAdapter extends BaseAdapter {
                 songItem.coverArtView.setImageBitmap(coverArt);
             }
 
-            if (currentSong.isSelected()) {
+            if (currentSong.isSelected() && isPlaylist) {
                 songItem.songItem.setBackgroundColor(Color.GRAY);
             } else {
                 songItem.songItem.setBackgroundColor(Color.WHITE);

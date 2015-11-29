@@ -11,5 +11,4 @@ public class Constants {
     public static final String NOTIFICATION_PREV = "notification prev";
     public static final String NOTIFICATION_NEXT = "notification next";
     public static final String NOTIFICATION_DELETED = "notification deleted";
-    public static final String NOTIFICATION_CLICKED = "notification clicked";
 }

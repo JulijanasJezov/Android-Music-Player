@@ -24,6 +24,9 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import com.jj.mysimpleplayer.PlaybackService.PlaybackBinder;
+import com.jj.mysimpleplayer.interfaces.PlaybackServiceCallbacks;
+import com.jj.mysimpleplayer.models.Song;
+import com.jj.mysimpleplayer.utility.Helpers;
 import com.jj.mysimpleplayer.constants.Constants;
 
 public class MainActivity extends AppCompatActivity implements PlaybackServiceCallbacks {
@@ -48,7 +51,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
 
         mDrawerList = (ListView)findViewById(R.id.side_nav);
         mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
-        mActivityTitle = getTitle().toString();
 
         sideNavItems = getResources().getStringArray(R.array.side_nav_items);
         ArrayAdapter<String> mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_activated_1, sideNavItems);
@@ -73,6 +75,16 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
     protected void onResume() {
         super.onResume();
 
+        Fragment f = getFragmentManager().findFragmentById(R.id.frame_container);
+        assert getSupportActionBar() != null;
+        if (f instanceof LibraryFragment) {
+            mActivityTitle = sideNavItems[0];
+        } else if (f instanceof PlaylistsFragment) {
+            mActivityTitle = sideNavItems[1];
+        }
+
+        getSupportActionBar().setTitle(mActivityTitle);
+
         if(playbackIntent==null){
             playbackIntent = new Intent(this, PlaybackService.class);
             startService(playbackIntent);
@@ -92,9 +104,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
             playbackService.closeNotification();
             playbackService.setClosedAppFlag(false);
 
-            if (isPlaylistChosen) {
-                playbackService.setSongLibrary(playlistSongs);
-            } else {
+            if (playbackService.getSongLibrary() == null) {
                 playbackService.setSongLibrary(songLibrary);
             }
 
@@ -200,11 +210,9 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
 
     private void initMiniPlayerUI(boolean isNextSong) {
         Song song;
-        if (isPlaylistChosen) {
-            song = playlistSongs.get(playbackService.getCurrentSong());
-        } else {
-            song = songLibrary.get(playbackService.getCurrentSong());
-        }
+
+        song = playbackService.getSongLibrary().get(playbackService.getCurrentSong());
+
         TextView songTitle = (TextView)findViewById(R.id.current_song);
         songTitle.setText(song.getTitle());
 
@@ -233,6 +241,10 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
             playbackService.setSongLibrary(playlistSongs);
         }
 
+        if (playbackService.isPlaying()) {
+            playbackService.stopSong();
+        }
+
         // Get song position from a song title view tag
         int songPos = Integer.parseInt(view.findViewById(R.id.song_title).getTag().toString());
         openPlayerIntent(songPos, true);
@@ -258,6 +270,11 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
             playPauseButton.setImageResource(R.drawable.ic_pause);
             playbackService.unpauseSong();
         }
+    }
+
+    public void endPlaylist() {
+        ImageButton playPauseButton = (ImageButton) findViewById(R.id.play_pause);
+        playPauseButton.setImageResource(R.drawable.ic_play);
     }
 
     @Override

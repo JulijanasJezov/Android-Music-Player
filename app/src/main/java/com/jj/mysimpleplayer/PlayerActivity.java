@@ -5,22 +5,20 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.IBinder;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.MediaController;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.jj.mysimpleplayer.interfaces.PlaybackServiceCallbacks;
+import com.jj.mysimpleplayer.models.Song;
+import com.jj.mysimpleplayer.utility.Helpers;
 import com.jj.mysimpleplayer.constants.Constants;
 
 public class PlayerActivity extends Activity implements MediaController.MediaPlayerControl, PlaybackServiceCallbacks {
@@ -76,7 +74,7 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
 
             playbackBound = true;
 
-            if (isPlayRequested && songPosition != playbackService.getCurrentSong()) {
+            if (isPlayRequested) {
                 playbackService.setCurrentSong(songPosition);
                 playbackService.playSong();
                 playPauseButton.setImageResource(R.drawable.ic_pause);
@@ -84,7 +82,6 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
             }
 
             initUI();
-
         }
 
         @Override
@@ -146,8 +143,8 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
         if (playbackService.nextSong()) {
             setSongDuration(Constants.UNSET_MAX_DURATION);
             playPauseButton.setImageResource(R.drawable.ic_pause);
-            initUI();
         }
+        initUI();
     }
 
     public void prevSong(){
@@ -156,6 +153,10 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
             playPauseButton.setImageResource(R.drawable.ic_pause);
             initUI();
         }
+    }
+
+    public void endPlaylist() {
+        playPauseButton.setImageResource(R.drawable.ic_play);
     }
 
     Runnable run = new Runnable() {
@@ -246,11 +247,8 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
 
     private void initUI() {
         Song song;
-        if (MainActivity.isPlaylistChosen) {
-            song = MainActivity.playlistSongs.get(playbackService.getCurrentSong());
-        } else {
-            song = MainActivity.songLibrary.get(playbackService.getCurrentSong());
-        }
+
+        song = playbackService.getSongLibrary().get(playbackService.getCurrentSong());
 
         TextView songTitleView = (TextView)findViewById(R.id.song_title);
         songTitleView.setText(song.getTitle());

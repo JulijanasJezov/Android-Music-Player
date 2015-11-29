@@ -1,4 +1,4 @@
-package com.jj.mysimpleplayer;
+package com.jj.mysimpleplayer.utility;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -9,6 +9,8 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.MediaStore;
 
+import com.jj.mysimpleplayer.models.Playlist;
+import com.jj.mysimpleplayer.models.Song;
 import com.jj.mysimpleplayer.database.DatabaseHelper;
 import com.jj.mysimpleplayer.database.PlaylistTable;
 

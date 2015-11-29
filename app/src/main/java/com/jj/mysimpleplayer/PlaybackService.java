@@ -24,9 +24,10 @@ import android.provider.MediaStore;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v7.app.NotificationCompat;
-import android.util.Log;
 
 import com.jj.mysimpleplayer.constants.Constants;
+import com.jj.mysimpleplayer.interfaces.PlaybackServiceCallbacks;
+import com.jj.mysimpleplayer.models.Song;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -97,6 +98,10 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
         songLibrary = songs;
     }
 
+    public ArrayList<Song> getSongLibrary() {
+        return songLibrary;
+    }
+
     public void setCurrentSong(int songPos) {
         songPosition = songPos;
     }
@@ -116,7 +121,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
             player.setDataSource(getApplicationContext(), songUri);
         }
         catch (Exception ex) {
-            Log.e("Playback Service", "Error", ex);
+            ex.printStackTrace();
         }
 
         player.prepareAsync();
@@ -173,8 +178,6 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
         if(songPosition < 0) {
             songPosition++;
-            playSong();
-            return false;
         }
 
         playSong();
@@ -188,14 +191,22 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-        if (songPosition == songLibrary.size() - 1) {
-            return;
+        boolean playlistEnded = songPosition == songLibrary.size() - 1;
+        if (playlistEnded) {
+            seekTo(0);
+            pauseSong();
         }
 
         if (playbackServiceCallbacks != null) {
-            playbackServiceCallbacks.nextSong();
+            if (playlistEnded) {
+                playbackServiceCallbacks.endPlaylist();
+            } else {
+                playbackServiceCallbacks.nextSong();
+            }
         } else {
-            nextSong();
+            if (!playlistEnded) {
+                nextSong();
+            }
             showNotification();
         }
     }
@@ -205,7 +216,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
     }
 
     public int getDuration() {
-        return player.isPlaying() ? player.getDuration() : Constants.UNSET_MAX_DURATION;
+        return player.getDuration();
     }
 
     public boolean isPlayerStarted() {
@@ -347,7 +358,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
         try {
             mediaController = new MediaControllerCompat(getApplicationContext(), mediaSession.getSessionToken());
         } catch (RemoteException ex) {
-            Log.d("MediaControllerInit", "Error");
+            ex.printStackTrace();
         }
 
         mediaSession.setActive(true);

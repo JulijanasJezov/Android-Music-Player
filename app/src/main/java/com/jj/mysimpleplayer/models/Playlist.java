@@ -1,4 +1,4 @@
-package com.jj.mysimpleplayer;
+package com.jj.mysimpleplayer.models;
 
 public class Playlist {
     private int id;

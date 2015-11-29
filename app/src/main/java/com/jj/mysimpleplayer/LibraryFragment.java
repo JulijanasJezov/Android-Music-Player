@@ -7,6 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import com.jj.mysimpleplayer.adapters.SongAdapter;
+
 
 public class LibraryFragment extends Fragment {
 
@@ -18,7 +20,7 @@ public class LibraryFragment extends Fragment {
         ListView libraryView = (ListView)rootView.findViewById(R.id.library_list);
 
         // Populate library list with songs
-        SongAdapter songAdapter = new SongAdapter(getActivity(), MainActivity.songLibrary);
+        SongAdapter songAdapter = new SongAdapter(getActivity(), MainActivity.songLibrary, false);
         libraryView.setAdapter(songAdapter);
 
         return rootView;

@@ -13,20 +13,20 @@ import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 
-import com.jj.mysimpleplayer.constants.Constants;
+import com.jj.mysimpleplayer.adapters.PlaylistAdapter;
+import com.jj.mysimpleplayer.adapters.SongAdapter;
+import com.jj.mysimpleplayer.models.Playlist;
+import com.jj.mysimpleplayer.models.Song;
+import com.jj.mysimpleplayer.utility.Helpers;
 import com.jj.mysimpleplayer.database.DatabaseHelper;
 import com.jj.mysimpleplayer.database.PlaylistTable;
 import com.jj.mysimpleplayer.database.SongsTable;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 
 public class PlaylistsFragment extends Fragment {
@@ -37,6 +37,7 @@ public class PlaylistsFragment extends Fragment {
     private View rootView;
     private SongAdapter playlistSongsAdapter;
     private PlaylistAdapter playlistAdapter;
+    private ListView playlistSongsView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -63,7 +64,7 @@ public class PlaylistsFragment extends Fragment {
         playlistAdapter = new PlaylistAdapter(getActivity(), playlists);
         playlistsView.setAdapter(playlistAdapter);
 
-        final ListView playlistSongsView = (ListView)rootView.findViewById(R.id.playlist_songs);
+        playlistSongsView = (ListView)rootView.findViewById(R.id.playlist_songs);
 
         LinearLayout addNewPlaylist = (LinearLayout) rootView.findViewById(R.id.add_new_playlist_layout);
         addNewPlaylist.setOnClickListener(new View.OnClickListener() {
@@ -79,11 +80,15 @@ public class PlaylistsFragment extends Fragment {
             public void onItemClick(AdapterView<?> av, View view, int position, long id) {
                 int playlistId = Integer.parseInt(view.findViewById(R.id.playlist_name).getTag().toString());
                 loadPlaylist(rootView.getContext(), playlistId);
-                playlistSongsAdapter = new SongAdapter(getActivity(), MainActivity.playlistSongs);
+                playlistSongsAdapter = new SongAdapter(getActivity(), MainActivity.playlistSongs, false);
                 playlistSongsView.setAdapter(playlistSongsAdapter);
                 currentPlaylistId = playlistId;
             }
         });
+
+        if (MainActivity.isPlaylistChosen) {
+            loadPlaylist(rootView.getContext(), currentPlaylistId);
+        }
 
     }
 
@@ -115,7 +120,7 @@ public class PlaylistsFragment extends Fragment {
         if (currentPlaylistId == playlistId) {
             MainActivity.playlistSongs.clear();
             MainActivity.isPlaylistChosen = false;
-            playlistSongsAdapter.notifyDataSetChanged();
+            playlistSongsView.setAdapter(null);
             MainActivity.playbackService.stopSong();
             MainActivity.playbackService.setSongLibrary(MainActivity.songLibrary);
             MainActivity.playbackService.setCurrentSong(0);

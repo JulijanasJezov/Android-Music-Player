@@ -4,7 +4,6 @@
     <string name="drawer_open">Side Navigation Opened</string>
     <string name="drawer_close">Side Navigation Closed</string>
     <string name="cover_art_desc">Displaying the cover art image for a song</string>
-    <string name="descr_overflow_button">Overflow menu button</string>
 
     <string-array name="side_nav_items">
         <item >Library</item>
