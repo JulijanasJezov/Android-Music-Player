@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/drawer_item"
+    android:orientation="horizontal"
+    android:padding="5dp">
+
+    <TextView
+        android:layout_marginStart="@dimen/text_horizontal_margin"
+        android:layout_marginBottom="@dimen/text_vertical_margin"
+        android:layout_marginTop="@dimen/text_vertical_margin"
+        android:id="@+id/item_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:scrollHorizontally="true"
+        android:ellipsize="end"
+        android:lines="1"
+        android:textColor="@drawable/drawer_list"/>
+</LinearLayout>

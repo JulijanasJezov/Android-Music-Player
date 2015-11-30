@@ -6,6 +6,11 @@
     <dimen name="spinner_horizontal_margin">16dp</dimen>
     <dimen name="spinner_vertical_margin">2dp</dimen>
 
+    <dimen name="text_horizontal_margin">16dp</dimen>
+    <dimen name="text_vertical_margin">15dp</dimen>
+
+    <dimen name="list_horizontal_margin">25dp</dimen>
+
     <dimen name="icon_horizontal_margin">10dp</dimen>
 
     <dimen name="player_image_horizontal_margin">30dp</dimen>

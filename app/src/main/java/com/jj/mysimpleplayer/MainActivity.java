@@ -15,8 +15,8 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -24,16 +24,18 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import com.jj.mysimpleplayer.PlaybackService.PlaybackBinder;
+import com.jj.mysimpleplayer.adapters.DrawerAdapter;
 import com.jj.mysimpleplayer.interfaces.PlaybackServiceCallbacks;
 import com.jj.mysimpleplayer.models.Song;
 import com.jj.mysimpleplayer.utility.Helpers;
 import com.jj.mysimpleplayer.constants.Constants;
 
 public class MainActivity extends AppCompatActivity implements PlaybackServiceCallbacks {
-    private ActionBarDrawerToggle mDrawerToggle;
-    private DrawerLayout mDrawerLayout;
-    private String mActivityTitle;
-    private ListView mDrawerList;
+    private ActionBarDrawerToggle drawerToggle;
+    private DrawerLayout drawerLayout;
+    private String activityTitle;
+    private LinearLayout drawerLinearLayout;
+    private ListView drawerList;
     private String[] sideNavItems;
     public static ArrayList<Song> songLibrary;
     public static ArrayList<Song> playlistSongs;
@@ -49,15 +51,17 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mDrawerList = (ListView)findViewById(R.id.side_nav);
-        mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
+        drawerLinearLayout = (LinearLayout)findViewById(R.id.side_nav);
+        drawerList = (ListView)findViewById(R.id.side_nav_list);
+        drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
 
         sideNavItems = getResources().getStringArray(R.array.side_nav_items);
-        ArrayAdapter<String> mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_activated_1, sideNavItems);
-        mDrawerList.setAdapter(mAdapter);
+
+        DrawerAdapter drawerAdapter = new DrawerAdapter(this, sideNavItems);
+        drawerList.setAdapter(drawerAdapter);
         setupSideNavToggle();
 
-        mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        drawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 openFragment(position);
@@ -78,12 +82,12 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
         Fragment f = getFragmentManager().findFragmentById(R.id.frame_container);
         assert getSupportActionBar() != null;
         if (f instanceof LibraryFragment) {
-            mActivityTitle = sideNavItems[0];
+            activityTitle = sideNavItems[0];
         } else if (f instanceof PlaylistsFragment) {
-            mActivityTitle = sideNavItems[1];
+            activityTitle = sideNavItems[1];
         }
 
-        getSupportActionBar().setTitle(mActivityTitle);
+        getSupportActionBar().setTitle(activityTitle);
 
         if(playbackIntent==null){
             playbackIntent = new Intent(this, PlaybackService.class);
@@ -122,18 +126,18 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        mDrawerToggle.syncState();
+        drawerToggle.syncState();
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        return mDrawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
+        return drawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        mDrawerToggle.onConfigurationChanged(newConfig);
+        drawerToggle.onConfigurationChanged(newConfig);
     }
 
     @Override
@@ -176,13 +180,13 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
             FragmentManager fragmentManager = getFragmentManager();
             fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
 
-            mDrawerList.setItemChecked(position, true);
-            mDrawerList.setSelection(position);
-            mActivityTitle = sideNavItems[position];
-            mDrawerLayout.closeDrawer(mDrawerList);
+            drawerList.setItemChecked(position, true);
+            drawerList.setSelection(position);
+            activityTitle = sideNavItems[position];
+            drawerLayout.closeDrawer(drawerLinearLayout);
 
             assert getSupportActionBar() != null;
-            getSupportActionBar().setTitle(mActivityTitle);
+            getSupportActionBar().setTitle(activityTitle);
         }
     }
 
@@ -191,7 +195,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
 
-        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close) {
+        drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.drawer_open, R.string.drawer_close) {
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
                 getSupportActionBar().setTitle(getString(R.string.app_name));
@@ -200,12 +204,12 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
 
             public void onDrawerClosed(View view) {
                 invalidateOptionsMenu();
-                getSupportActionBar().setTitle(mActivityTitle);
+                getSupportActionBar().setTitle(activityTitle);
             }
         };
 
-        mDrawerToggle.setDrawerIndicatorEnabled(true);
-        mDrawerLayout.setDrawerListener(mDrawerToggle);
+        drawerToggle.setDrawerIndicatorEnabled(true);
+        drawerLayout.setDrawerListener(drawerToggle);
     }
 
     private void initMiniPlayerUI(boolean isNextSong) {
