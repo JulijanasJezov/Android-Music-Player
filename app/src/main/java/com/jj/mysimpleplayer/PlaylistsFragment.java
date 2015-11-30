@@ -14,11 +14,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.LinearLayout;
+import android.widget.ArrayAdapter;
+import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.Spinner;
 
 import com.jj.mysimpleplayer.adapters.PlaylistAdapter;
 import com.jj.mysimpleplayer.adapters.SongAdapter;
+import com.jj.mysimpleplayer.constants.Constants;
 import com.jj.mysimpleplayer.models.Playlist;
 import com.jj.mysimpleplayer.models.Song;
 import com.jj.mysimpleplayer.utility.Helpers;
@@ -28,6 +31,7 @@ import com.jj.mysimpleplayer.database.SongsTable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class PlaylistsFragment extends Fragment {
 
@@ -38,6 +42,8 @@ public class PlaylistsFragment extends Fragment {
     private SongAdapter playlistSongsAdapter;
     private PlaylistAdapter playlistAdapter;
     private ListView playlistSongsView;
+    private int spinnerPos;
+    private Spinner playlistsView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -51,22 +57,7 @@ public class PlaylistsFragment extends Fragment {
 
         currentPlaylistId = 0;
 
-        return rootView;
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        playlists = Helpers.getPlaylists(dbHelper);
-        ListView playlistsView = (ListView)rootView.findViewById(R.id.playlists_list);
-
-        // Populate library list with songs
-        playlistAdapter = new PlaylistAdapter(getActivity(), playlists);
-        playlistsView.setAdapter(playlistAdapter);
-
-        playlistSongsView = (ListView)rootView.findViewById(R.id.playlist_songs);
-
-        LinearLayout addNewPlaylist = (LinearLayout) rootView.findViewById(R.id.add_new_playlist_layout);
+        ImageButton addNewPlaylist = (ImageButton) rootView.findViewById(R.id.add_playlist);
         addNewPlaylist.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -74,22 +65,57 @@ public class PlaylistsFragment extends Fragment {
             }
         });
 
-        playlistsView.setClickable(true);
-        playlistsView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        ImageButton removePlaylist = (ImageButton) rootView.findViewById(R.id.remove_playlist);
+        removePlaylist.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> av, View view, int position, long id) {
-                int playlistId = Integer.parseInt(view.findViewById(R.id.playlist_name).getTag().toString());
-                loadPlaylist(rootView.getContext(), playlistId);
-                playlistSongsAdapter = new SongAdapter(getActivity(), MainActivity.playlistSongs, false);
-                playlistSongsView.setAdapter(playlistSongsAdapter);
-                currentPlaylistId = playlistId;
+            public void onClick(View view) {
+                removePlaylistClicked(view);
             }
         });
 
-        if (MainActivity.isPlaylistChosen) {
-            loadPlaylist(rootView.getContext(), currentPlaylistId);
+        if (savedInstanceState != null) {
+            currentPlaylistId = savedInstanceState.getInt(Constants.PLAYLIST_ID);
+            spinnerPos = savedInstanceState.getInt(Constants.SPINNER_POS);
         }
 
+        return rootView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        playlists = Helpers.getPlaylists(dbHelper);
+        playlistsView = (Spinner)rootView.findViewById(R.id.playlists_spinner);
+
+        // Populate library list with songs
+        playlistAdapter = new PlaylistAdapter(getActivity(), playlists);
+        playlistsView.setAdapter(playlistAdapter);
+
+        playlistSongsView = (ListView)rootView.findViewById(R.id.playlist_songs);
+
+        playlistsView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            public void onItemSelected(AdapterView<?> av, View view, int position, long id) {
+                if (view != null) {
+                    currentPlaylistId = Integer.parseInt(view.findViewById(R.id.playlist_name).getTag().toString());
+                    spinnerPos = position;
+                } else {
+                    playlistsView.setSelection(spinnerPos);
+                }
+
+                loadPlaylist(rootView.getContext(), currentPlaylistId);
+                playlistSongsAdapter = new SongAdapter(getActivity(), MainActivity.playlistSongs, false);
+                playlistSongsView.setAdapter(playlistSongsAdapter);
+            }
+
+            public void onNothingSelected(AdapterView<?> av) {
+                List<String> list = new ArrayList<String>();
+                list.add("No Playlist found");
+                ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(),
+                        android.R.layout.simple_spinner_item, list);
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                playlistsView.setAdapter(adapter);
+            }
+        });
     }
 
     @Override
@@ -97,18 +123,24 @@ public class PlaylistsFragment extends Fragment {
         super.onPause();
     }
 
-    public void onDeletePlaylistClick(View view) {
-        View v = (View)view.getParent();
-        int playlistId = Integer.parseInt(v.findViewById(R.id.playlist_name).getTag().toString());
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+
+        savedInstanceState.putInt(Constants.PLAYLIST_ID, currentPlaylistId);
+        savedInstanceState.putInt(Constants.SPINNER_POS, spinnerPos);
+    }
+
+    public void removePlaylistClicked(View view) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
-        db.delete(SongsTable.SongsTableEntry.TABLE_NAME, SongsTable.SongsTableEntry.PLAYLIST_ID + "=" + playlistId, null);
-        db.delete(PlaylistTable.PlaylistTableEntry.TABLE_NAME, PlaylistTable.PlaylistTableEntry._ID + "=" + playlistId, null);
+        db.delete(SongsTable.SongsTableEntry.TABLE_NAME, SongsTable.SongsTableEntry.PLAYLIST_ID + "=" + currentPlaylistId, null);
+        db.delete(PlaylistTable.PlaylistTableEntry.TABLE_NAME, PlaylistTable.PlaylistTableEntry._ID + "=" + currentPlaylistId, null);
 
         int indexOfPlaylist = 0;
 
         for (Playlist pl : playlists) {
-            if (pl.getId() == playlistId) {
+            if (pl.getId() == currentPlaylistId) {
                 break;
             }
 
@@ -117,16 +149,13 @@ public class PlaylistsFragment extends Fragment {
 
         playlists.remove(indexOfPlaylist);
 
-        if (currentPlaylistId == playlistId) {
-            MainActivity.playlistSongs.clear();
-            MainActivity.isPlaylistChosen = false;
+        if(playlists.isEmpty()) {
             playlistSongsView.setAdapter(null);
-            MainActivity.playbackService.stopSong();
-            MainActivity.playbackService.setSongLibrary(MainActivity.songLibrary);
-            MainActivity.playbackService.setCurrentSong(0);
+        } else {
+            playlistsView.setAdapter(null); // workaround for onItemSelected not triggered if position remains the same
         }
 
-        playlistAdapter.notifyDataSetChanged();
+        playlistsView.setAdapter(playlistAdapter);
     }
 
     private void addNewPlaylistClicked(View view) {
@@ -194,7 +223,6 @@ public class PlaylistsFragment extends Fragment {
                             fetchedImages.put(albumId, coverArt);
                         }
                     } catch (Exception ex) {
-                        ex.printStackTrace();
                     }
                 }
 
@@ -206,5 +234,6 @@ public class PlaylistsFragment extends Fragment {
         }
 
         MainActivity.playlistSongs = songsPlaylist;
+        db.close();
     }
 }

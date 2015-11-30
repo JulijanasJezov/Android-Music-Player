@@ -224,12 +224,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
         }
     }
 
-    public void onDeletePlaylistClick(View view) {
-        Fragment f = getFragmentManager().findFragmentById(R.id.frame_container);
-        PlaylistsFragment playlistsFragment = (PlaylistsFragment)f;
-        playlistsFragment.onDeletePlaylistClick(view);
-    }
-
     public void onSongClick(View view) {
         Fragment f = getFragmentManager().findFragmentById(R.id.frame_container);
 

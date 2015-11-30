@@ -5,41 +5,47 @@
     android:orientation="vertical">
 
     <LinearLayout
-        android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin"
-        android:paddingTop="@dimen/activity_vertical_margin"
         android:layout_width="match_parent"
         android:orientation="horizontal"
-        android:layout_height="70sp"
-        android:id="@+id/add_new_playlist_layout"
-        android:background="@drawable/shadow_bg">
+        android:layout_height="50sp"
+        android:background="@color/orange"
+        android:gravity="center">
 
-        <TextView
+        <ImageButton
+            android:id="@+id/add_playlist"
+            android:layout_width="0dp"
+            android:layout_height="fill_parent"
+            android:layout_weight=".15"
+            android:src="@drawable/ic_add_white_24dp"
+            android:background="@null"
+            android:contentDescription="@string/add_desc" />
+
+        <Spinner
+            android:paddingLeft="@dimen/spinner_horizontal_margin"
+            android:paddingRight="@dimen/spinner_horizontal_margin"
+            android:layout_marginTop="@dimen/spinner_vertical_margin"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight=".8"
-            android:textColor="#000000"
-            android:textSize="25sp"
-            android:textStyle="bold"
+            android:id="@+id/playlists_spinner"
+            android:prompt="@string/select_playlist"
             android:gravity="center"
-            android:scrollHorizontally="true"
-            android:ellipsize="end"
-            android:lines="1"
-            android:text="Add Playlist"/>
+            android:popupBackground="@color/orange" />
 
+        <ImageButton
+            android:id="@+id/remove_playlist"
+            android:layout_width="0dp"
+            android:layout_height="fill_parent"
+            android:layout_weight=".15"
+            android:src="@drawable/ic_remove_white_24dp"
+            android:background="@null"
+            android:contentDescription="@string/remove_desc" />
     </LinearLayout>
 
     <ListView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight=".5"
-        android:id="@+id/playlists_list">
-    </ListView>
-
-    <ListView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight=".5"
+        android:layout_weight=".9"
         android:id="@+id/playlist_songs">
     </ListView>
 </LinearLayout>

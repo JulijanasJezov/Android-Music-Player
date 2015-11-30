@@ -138,6 +138,8 @@ public class Helpers {
             playlistsCursor.close();
         }
 
+        db.close();
+
         return playlists;
     }
 }

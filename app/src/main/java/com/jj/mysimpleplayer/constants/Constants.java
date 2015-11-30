@@ -3,6 +3,8 @@ package com.jj.mysimpleplayer.constants;
 public class Constants {
     public final static String SONG_POSITION = "com.jj.mysimpleplayer.SONG_POS";
     public final static String PLAY_REQUEST = "com.jj.mysimpleplayer.PLAY_REQ";
+    public final static String PLAYLIST_ID = "com.jj.mysimpleplayer.PLAYLIST_ID";
+    public final static String SPINNER_POS = "com.jj.mysimpleplayer.SPINNER_POS";
 
     public static final int UNSET_MAX_DURATION = 100;
 
