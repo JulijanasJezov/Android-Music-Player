@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Bundle;
@@ -124,9 +126,9 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
     private void updateShuffleButton() {
         ImageView shuffleButton = (ImageView) findViewById(R.id.shuffle);
         if (playbackService.getShuffleStatus()) {
-            shuffleButton.setImageResource(R.drawable.ic_shuff);
+            shuffleButton.getBackground().setColorFilter(getResources().getColor(R.color.light_orange), PorterDuff.Mode.SRC_ATOP);
         } else {
-            shuffleButton.setImageResource(R.drawable.ic_shuff_off);
+            shuffleButton.getBackground().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
         }
     }
 

@@ -16,7 +16,7 @@
             android:layout_width="0dp"
             android:layout_height="fill_parent"
             android:layout_weight=".15"
-            android:src="@drawable/ic_add_white_24dp"
+            android:src="@drawable/ic_add"
             android:background="@null"
             android:contentDescription="@string/add_desc" />
 
@@ -37,7 +37,7 @@
             android:layout_width="0dp"
             android:layout_height="fill_parent"
             android:layout_weight=".15"
-            android:src="@drawable/ic_remove_white_24dp"
+            android:src="@drawable/ic_remove"
             android:background="@null"
             android:contentDescription="@string/remove_desc" />
     </LinearLayout>

@@ -22,7 +22,8 @@
     <string name="select_playlist">Choose Playlist</string>
 
     <color name="orange">#F4511E</color>
-    <color name="light_orange">#FF7043</color>
+    <color name="light_orange">#FF8A65</color>
+    <color name="white">#FFFFFF</color>
 
 
 </resources>
