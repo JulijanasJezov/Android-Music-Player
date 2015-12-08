@@ -140,7 +140,8 @@
                     android:id="@+id/prev_song"
                     android:onClick="prevSongClick"
                     android:background="@drawable/round_button"
-                    android:src="@drawable/ic_prev"/>
+                    android:src="@drawable/ic_prev"
+                    android:contentDescription="@string/previous_desc"/>
 
                 <ImageButton
                     android:layout_marginEnd="10dp"
@@ -150,7 +151,8 @@
                     android:id="@+id/play_pause"
                     android:onClick="playPauseClick"
                     android:background="@drawable/round_button"
-                    android:src="@drawable/ic_pause"/>
+                    android:src="@drawable/ic_pause"
+                    android:contentDescription="@string/play_pause_desc"/>
 
                 <ImageButton
                     android:layout_width="wrap_content"
@@ -158,7 +160,8 @@
                     android:id="@+id/next_song"
                     android:onClick="nextSongClick"
                     android:background="@drawable/round_button"
-                    android:src="@drawable/ic_next"/>
+                    android:src="@drawable/ic_next"
+                    android:contentDescription="@string/next_desc"/>
             </LinearLayout>
 
             <LinearLayout
@@ -172,7 +175,8 @@
                     android:id="@+id/shuffle"
                     android:onClick="onShuffleClick"
                     android:background="@drawable/round_button"
-                    android:src="@drawable/ic_shuff"/>
+                    android:src="@drawable/ic_shuff"
+                    android:contentDescription="@string/shuffle_desc"/>
 
             </LinearLayout>
         </LinearLayout>

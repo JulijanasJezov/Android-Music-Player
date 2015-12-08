@@ -25,7 +25,4 @@ public final class SongsTable {
                     SongsTableEntry.SONG_ALBUM_ID + INT_TYPE + COMMA_SEP +
                     SongsTableEntry.SONG_TITLE + TEXT_TYPE + COMMA_SEP +
                     SongsTableEntry.SONG_ARTIST + TEXT_TYPE + " )";
-
-    public static final String SQL_DELETE_SONGS_TABLE =
-            "DROP TABLE IF EXISTS " + SongsTableEntry.TABLE_NAME;
 }

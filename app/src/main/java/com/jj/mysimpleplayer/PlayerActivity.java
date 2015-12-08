@@ -41,6 +41,7 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
 
+        // Get passed parameters
         Intent intent = getIntent();
         songPosition = intent.getIntExtra(Constants.SONG_POSITION, 0);
         isPlayRequested = intent.getBooleanExtra(Constants.PLAY_REQUEST, false);
@@ -58,6 +59,9 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
         bindService(playbackIntent, playbackServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
+    /*
+       Handles the service connection/disconnection
+   */
     private ServiceConnection playbackServiceConnection = new ServiceConnection(){
 
         @Override
@@ -103,6 +107,9 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
         unbindService(playbackServiceConnection);
     }
 
+    /*
+       Handles play/pause button click
+   */
     public void playPauseClick(View view) {
         if (playbackService.isPlaying()) {
             playPauseButton.setImageResource(R.drawable.ic_play);
@@ -113,6 +120,9 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
         }
     }
 
+    /*
+       Set/unset shuffle feature on button click
+   */
     public void onShuffleClick(View view) {
         if (playbackService.getShuffleStatus()) {
             playbackService.setShuffle(false);
@@ -123,6 +133,9 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
         updateShuffleButton();
     }
 
+    /*
+       Update shuffle button showing if it's on/off
+   */
     private void updateShuffleButton() {
         ImageView shuffleButton = (ImageView) findViewById(R.id.shuffle);
         if (playbackService.getShuffleStatus()) {
@@ -132,14 +145,23 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
         }
     }
 
+    /*
+       Next song button click
+   */
     public void nextSongClick(View view) {
         nextSong();
     }
 
+    /*
+       Previous song button click
+   */
     public void prevSongClick(View view) {
         prevSong();
     }
 
+    /*
+       Update UI on next song
+   */
     @Override
     public void nextSong(){
         if (playbackService.nextSong()) {
@@ -149,6 +171,9 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
         initUI();
     }
 
+    /*
+       Update UI on previous song
+   */
     public void prevSong(){
         if (playbackService.prevSong()) {
             setSongDuration(Constants.UNSET_MAX_DURATION);
@@ -157,16 +182,25 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
         }
     }
 
+    /*
+       Update UI when playlist ends
+   */
     public void endPlaylist() {
         playPauseButton.setImageResource(R.drawable.ic_play);
     }
 
-    Runnable run = new Runnable() {
+    /*
+       Thread for maintaining the seek bar
+   */
+    Runnable maintainSeekBar = new Runnable() {
         @Override public void run() {
             updateSongSeekBar();
         }
     };
 
+    /*
+       Update the seek bar position depending on the song duration and current position
+   */
     public void updateSongSeekBar() {
         if (playbackBound && playbackService.isPlayerStarted()) {
             if (songSeekBar.getMax() == Constants.UNSET_MAX_DURATION) {
@@ -176,7 +210,7 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
             int currentPos = getCurrentPosition();
             songSeekBar.setProgress(currentPos);
         }
-        seekHandler.postDelayed(run, 100);
+        seekHandler.postDelayed(maintainSeekBar, 100);
     }
 
     @Override
@@ -234,6 +268,9 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
         return 0;
     }
 
+    /*
+       Handle the seek bar user interaction clicks
+   */
     private class seekBarListener implements SeekBar.OnSeekBarChangeListener {
 
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -247,6 +284,9 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
         }
     }
 
+    /*
+       Initialise/update the whole activity's UI
+   */
     private void initUI() {
         Song song;
 
@@ -276,6 +316,9 @@ public class PlayerActivity extends Activity implements MediaController.MediaPla
         updateSongSeekBar();
     }
 
+    /*
+       Sets the seek bar's duration of the passed value
+   */
     private void setSongDuration(int dur) {
         songSeekBar.setMax(dur);
         songDurationText.setText(Helpers.getFormattedTime(dur));

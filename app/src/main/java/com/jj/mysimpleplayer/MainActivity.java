@@ -42,7 +42,6 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
 
     public static PlaybackService playbackService;
     private Intent playbackIntent;
-    private boolean playbackBound = false;
 
     public static boolean isPlaylistChosen = false;
 
@@ -51,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Create side drawer navigation
         drawerLinearLayout = (LinearLayout)findViewById(R.id.side_nav);
         drawerList = (ListView)findViewById(R.id.side_nav_list);
         drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
@@ -68,10 +68,11 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
             }
         });
 
+        // Get all the songs for the library
         songLibrary = Helpers.getSongLibrary(this);
 
         if (savedInstanceState == null) {
-            openFragment(0);
+            openFragment(0); // if new activity open the first fragment view
         }
     }
 
@@ -79,11 +80,12 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
     protected void onResume() {
         super.onResume();
 
-        Fragment f = getFragmentManager().findFragmentById(R.id.frame_container);
+        // Set the activities title depending on the fragment opened
+        Fragment fragment = getFragmentManager().findFragmentById(R.id.frame_container);
         assert getSupportActionBar() != null;
-        if (f instanceof LibraryFragment) {
+        if (fragment instanceof LibraryFragment) {
             activityTitle = sideNavItems[0];
-        } else if (f instanceof PlaylistsFragment) {
+        } else if (fragment instanceof PlaylistsFragment) {
             activityTitle = sideNavItems[1];
         }
 
@@ -97,8 +99,10 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
         bindService(playbackIntent, playbackServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
+    /*
+        Handles the service connection/disconnection
+    */
     private ServiceConnection playbackServiceConnection = new ServiceConnection(){
-
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             PlaybackBinder binder = (PlaybackBinder)service;
@@ -113,14 +117,10 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
             }
 
             initMiniPlayerUI(false);
-
-            playbackBound = true;
         }
 
         @Override
-        public void onServiceDisconnected(ComponentName name) {
-            playbackBound = false;
-        }
+        public void onServiceDisconnected(ComponentName name) {}
     };
 
     @Override
@@ -145,7 +145,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
         super.onPause();
 
         if (playbackService != null) {
-            playbackService.removeCallbacks();
+            playbackService.removeCallbacks(); // Remove callbacks in the service when activity isn't visible
         }
         unbindService(playbackServiceConnection);
     }
@@ -154,6 +154,8 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
     protected void onDestroy() {
         super.onDestroy();
 
+        // Stop the service when the app is closed and music isn't playing
+        // Otherwise display notification
         if(!playbackService.isPlaying()) {
             stopService(playbackIntent);
             playbackService = null;
@@ -163,6 +165,9 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
         }
     }
 
+    /*
+        Opens one of the fragments to display in the activity
+    */
     private void openFragment(int position) {
         Fragment fragment = null;
         switch (position) {
@@ -190,6 +195,9 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
         }
     }
 
+    /*
+        Set up side navigation toggle, handling onOpened/onClosed actions
+    */
     private void setupSideNavToggle() {
         assert getSupportActionBar() != null;
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -212,6 +220,9 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
         drawerLayout.setDrawerListener(drawerToggle);
     }
 
+    /*
+        Initialise mini player displayed at the bottom, setting up the songs details
+    */
     private void initMiniPlayerUI(boolean isNextSong) {
         Song song;
 
@@ -228,6 +239,9 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
         }
     }
 
+    /*
+        Handles the song click, finds the right song library and the song's position
+    */
     public void onSongClick(View view) {
         Fragment f = getFragmentManager().findFragmentById(R.id.frame_container);
 
@@ -248,10 +262,16 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
         openPlayerIntent(songPos, true);
     }
 
+    /*
+        Opens a player activity with play request being false
+    */
     public void openPlayer(View view) {
         openPlayerIntent(playbackService.getCurrentSong(), false);
     }
 
+    /*
+        Creates a new player intent and starts it
+    */
     private void openPlayerIntent(int songPos, boolean playReq) {
         Intent playerActivityIntent = new Intent(this, PlayerActivity.class);
         playerActivityIntent.putExtra(Constants.SONG_POSITION, songPos);
@@ -259,6 +279,9 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
         startActivity(playerActivityIntent);
     }
 
+    /*
+        Handles the play/pause button click pausing/unpausing the song
+    */
     public void playPauseClick(View view) {
         ImageButton playPauseButton = (ImageButton) view;
         if (playbackService.isPlaying()) {
@@ -270,11 +293,17 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
         }
     }
 
+    /*
+        Update UI when playlist ends
+    */
     public void endPlaylist() {
         ImageButton playPauseButton = (ImageButton) findViewById(R.id.play_pause);
         playPauseButton.setImageResource(R.drawable.ic_play);
     }
 
+    /*
+        Update UI when next song comes on
+    */
     @Override
     public void nextSong() {
         if (playbackService.nextSong()) {

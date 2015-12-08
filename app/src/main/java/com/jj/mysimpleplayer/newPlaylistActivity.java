@@ -27,17 +27,19 @@ public class NewPlaylistActivity extends AppCompatActivity {
     private ArrayList<Song> playlist = new ArrayList<>();
     private ArrayList<Song> songLibrary;
     private ArrayList<Playlist> existingPlaylists;
-    SongAdapter songAdapter;
-    DatabaseHelper dbHelper;
+    private SongAdapter songAdapter;
+    private DatabaseHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_playlist);
 
+        // Load the list of available songs
         ListView playlistView = (ListView)findViewById(R.id.add_to_playlist_list);
         songLibrary = MainActivity.songLibrary;
 
+        // Recreate the selected list of songs
         for (Song s : songLibrary) {
             if (s.isSelected()) playlist.add(s);
         }
@@ -69,6 +71,9 @@ public class NewPlaylistActivity extends AppCompatActivity {
         }
     }
 
+    /*
+        Handle on song click, highlighting the selected song
+    */
     public void onSongClick(View view) {
         int songPos = Integer.parseInt(view.findViewById(R.id.song_title).getTag().toString());
         Song song = MainActivity.songLibrary.get(songPos);
@@ -86,6 +91,9 @@ public class NewPlaylistActivity extends AppCompatActivity {
 
     }
 
+    /*
+        Creates a new playlist of chosen songs and saves it to the database
+    */
     private void createNewPlaylist() {
         String toastText = null;
         EditText playlistNameText = (EditText)findViewById(R.id.playlist_name);
@@ -132,6 +140,7 @@ public class NewPlaylistActivity extends AppCompatActivity {
                     songValues);
         }
 
+        // Remove the highlighted list items
         for (Song song : playlist) {
             int index = songLibrary.indexOf(song);
             songLibrary.get(index).setSelected(false);
