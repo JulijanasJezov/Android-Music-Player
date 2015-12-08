@@ -45,7 +45,6 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
     private boolean isPlayerStarted = false;
     private boolean isAppClosed = false;
 
-    private MediaSessionManager sessionManager;
     private MediaSessionCompat mediaSession;
     private MediaControllerCompat mediaController;
     private NotificationManager notificationManager;
@@ -78,7 +77,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (sessionManager == null) initSession();
+        if (mediaSession == null) initSession();
 
         handleIntent(intent);
         checkNotificationStatus();
@@ -444,7 +443,6 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
         Initialise media session setting all the controls for notification
     */
     public void initSession() {
-        sessionManager = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
         mediaSession = new MediaSessionCompat(getApplicationContext(), "media session", null, null);
         try {
             mediaController = new MediaControllerCompat(getApplicationContext(), mediaSession.getSessionToken());
