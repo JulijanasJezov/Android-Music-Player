@@ -1,5 +1,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:orientation="vertical"
@@ -12,13 +14,13 @@
         android:layout_width="match_parent"
         android:orientation="vertical"
         android:layout_height="70sp"
-        android:background="@drawable/shadow_bg">
+        android:background="@color/orange">
 
         <TextView
             android:id="@+id/song_title"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:textColor="#000000"
+            android:textColor="@color/white"
             android:textSize="20sp"
             android:textStyle="bold"
             android:gravity="center"
@@ -30,7 +32,7 @@
             android:id="@+id/song_artist"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:textColor="#000000"
+            android:textColor="@color/white"
             android:textSize="16sp"
             android:gravity="center"
             android:scrollHorizontally="true"
@@ -61,8 +63,6 @@
     </LinearLayout>
 
     <LinearLayout
-        android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingTop="@dimen/activity_vertical_margin"
         android:layout_width="match_parent"
         android:orientation="vertical"
@@ -70,6 +70,9 @@
         android:layout_height="0dp">
 
         <LinearLayout
+
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingRight="@dimen/activity_horizontal_margin"
             android:layout_width="match_parent"
             android:orientation="horizontal"
             android:layout_height="30dp"
@@ -122,7 +125,7 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight=".1">
+                android:layout_weight=".15">
             </LinearLayout>
 
             <LinearLayout
@@ -137,7 +140,8 @@
                     android:id="@+id/prev_song"
                     android:onClick="prevSongClick"
                     android:background="@drawable/round_button"
-                    android:src="@drawable/ic_prev"/>
+                    android:src="@drawable/ic_prev"
+                    android:contentDescription="@string/previous_desc"/>
 
                 <ImageButton
                     android:layout_marginEnd="10dp"
@@ -147,7 +151,8 @@
                     android:id="@+id/play_pause"
                     android:onClick="playPauseClick"
                     android:background="@drawable/round_button"
-                    android:src="@drawable/ic_pause"/>
+                    android:src="@drawable/ic_pause"
+                    android:contentDescription="@string/play_pause_desc"/>
 
                 <ImageButton
                     android:layout_width="wrap_content"
@@ -155,14 +160,14 @@
                     android:id="@+id/next_song"
                     android:onClick="nextSongClick"
                     android:background="@drawable/round_button"
-                    android:src="@drawable/ic_next"/>
+                    android:src="@drawable/ic_next"
+                    android:contentDescription="@string/next_desc"/>
             </LinearLayout>
 
             <LinearLayout
-                android:layout_width="0dp"
+                android:layout_width="20dp"
                 android:layout_height="wrap_content"
-                android:layout_weight=".1"
-                android:gravity="end">
+                android:layout_weight=".1">
 
                 <ImageButton
                     android:layout_width="wrap_content"
@@ -170,7 +175,8 @@
                     android:id="@+id/shuffle"
                     android:onClick="onShuffleClick"
                     android:background="@drawable/round_button"
-                    android:src="@drawable/ic_shuff"/>
+                    android:src="@drawable/ic_shuff"
+                    android:contentDescription="@string/shuffle_desc"/>
 
             </LinearLayout>
         </LinearLayout>

@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import com.jj.mysimpleplayer.models.Playlist;
 import com.jj.mysimpleplayer.models.Song;
@@ -21,6 +22,9 @@ import java.util.HashMap;
 
 public class Helpers {
 
+    /*
+        Formats the time in (hours:)minutes:seconds from an integer
+    */
     public static String getFormattedTime(int progress) {
         int seconds = 1000;
         int minutes = seconds * 60;
@@ -38,6 +42,9 @@ public class Helpers {
                 : String.format("%d:%02d", elapsedMinutes, elapsedSeconds);
     }
 
+    /*
+        Creates a new <Song> library from all the songs found and returns it
+    */
     public static ArrayList<Song> getSongLibrary(Context context) {
         ContentResolver musicResolver = context.getContentResolver();
         Uri imageUri = Uri.parse("content://media/external/audio/albumart");
@@ -80,7 +87,9 @@ public class Helpers {
                         if (coverArt != null) {
                             fetchedImages.put(albumId, coverArt);
                         }
-                    } catch (Exception ex) { }
+                    } catch (Exception ex) {
+                        Log.e("CoverArt", "Cannot find the cover art " + ex.getMessage());
+                    }
                 }
 
                 songLibrary.add(new Song(thisId, albumId, thisTitle, thisArtist, coverArt));
@@ -99,6 +108,9 @@ public class Helpers {
         return songLibrary;
     }
 
+    /*
+        Gets a list of <Playlist> from the database and returns it
+    */
     public static ArrayList<Playlist> getPlaylists(DatabaseHelper dbHelper) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
@@ -137,6 +149,8 @@ public class Helpers {
 
             playlistsCursor.close();
         }
+
+        db.close();
 
         return playlists;
     }

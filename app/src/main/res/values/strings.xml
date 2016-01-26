@@ -4,6 +4,12 @@
     <string name="drawer_open">Side Navigation Opened</string>
     <string name="drawer_close">Side Navigation Closed</string>
     <string name="cover_art_desc">Displaying the cover art image for a song</string>
+    <string name="add_desc">Add button</string>
+    <string name="play_pause_desc">Play and pause button</string>
+    <string name="previous_desc">Previous song button</string>
+    <string name="next_desc">Next song button</string>
+    <string name="shuffle_desc">Shuffle button</string>
+    <string name="remove_desc">Remove button</string>
 
     <string-array name="side_nav_items">
         <item >Library</item>
@@ -17,5 +23,11 @@
 
     <string name="create">Create</string>
     <string name="playlist_name">Playlist Name</string>
+    <string name="select_playlist">Choose Playlist</string>
+
+    <color name="orange">#F4511E</color>
+    <color name="light_orange">#FF8A65</color>
+    <color name="white">#FFFFFF</color>
+
 
 </resources>

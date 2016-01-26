@@ -15,8 +15,8 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -24,23 +24,24 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import com.jj.mysimpleplayer.PlaybackService.PlaybackBinder;
+import com.jj.mysimpleplayer.adapters.DrawerAdapter;
 import com.jj.mysimpleplayer.interfaces.PlaybackServiceCallbacks;
 import com.jj.mysimpleplayer.models.Song;
 import com.jj.mysimpleplayer.utility.Helpers;
 import com.jj.mysimpleplayer.constants.Constants;
 
 public class MainActivity extends AppCompatActivity implements PlaybackServiceCallbacks {
-    private ActionBarDrawerToggle mDrawerToggle;
-    private DrawerLayout mDrawerLayout;
-    private String mActivityTitle;
-    private ListView mDrawerList;
+    private ActionBarDrawerToggle drawerToggle;
+    private DrawerLayout drawerLayout;
+    private String activityTitle;
+    private LinearLayout drawerLinearLayout;
+    private ListView drawerList;
     private String[] sideNavItems;
     public static ArrayList<Song> songLibrary;
     public static ArrayList<Song> playlistSongs;
 
     public static PlaybackService playbackService;
     private Intent playbackIntent;
-    private boolean playbackBound = false;
 
     public static boolean isPlaylistChosen = false;
 
@@ -49,25 +50,29 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mDrawerList = (ListView)findViewById(R.id.side_nav);
-        mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
+        // Create side drawer navigation
+        drawerLinearLayout = (LinearLayout)findViewById(R.id.side_nav);
+        drawerList = (ListView)findViewById(R.id.side_nav_list);
+        drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
 
         sideNavItems = getResources().getStringArray(R.array.side_nav_items);
-        ArrayAdapter<String> mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_activated_1, sideNavItems);
-        mDrawerList.setAdapter(mAdapter);
+
+        DrawerAdapter drawerAdapter = new DrawerAdapter(this, sideNavItems);
+        drawerList.setAdapter(drawerAdapter);
         setupSideNavToggle();
 
-        mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        drawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 openFragment(position);
             }
         });
 
+        // Get all the songs for the library
         songLibrary = Helpers.getSongLibrary(this);
 
         if (savedInstanceState == null) {
-            openFragment(0);
+            openFragment(0); // if new activity open the first fragment view
         }
     }
 
@@ -75,15 +80,16 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
     protected void onResume() {
         super.onResume();
 
-        Fragment f = getFragmentManager().findFragmentById(R.id.frame_container);
+        // Set the activities title depending on the fragment opened
+        Fragment fragment = getFragmentManager().findFragmentById(R.id.frame_container);
         assert getSupportActionBar() != null;
-        if (f instanceof LibraryFragment) {
-            mActivityTitle = sideNavItems[0];
-        } else if (f instanceof PlaylistsFragment) {
-            mActivityTitle = sideNavItems[1];
+        if (fragment instanceof LibraryFragment) {
+            activityTitle = sideNavItems[0];
+        } else if (fragment instanceof PlaylistsFragment) {
+            activityTitle = sideNavItems[1];
         }
 
-        getSupportActionBar().setTitle(mActivityTitle);
+        getSupportActionBar().setTitle(activityTitle);
 
         if(playbackIntent==null){
             playbackIntent = new Intent(this, PlaybackService.class);
@@ -93,8 +99,10 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
         bindService(playbackIntent, playbackServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
+    /*
+        Handles the service connection/disconnection
+    */
     private ServiceConnection playbackServiceConnection = new ServiceConnection(){
-
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             PlaybackBinder binder = (PlaybackBinder)service;
@@ -109,31 +117,27 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
             }
 
             initMiniPlayerUI(false);
-
-            playbackBound = true;
         }
 
         @Override
-        public void onServiceDisconnected(ComponentName name) {
-            playbackBound = false;
-        }
+        public void onServiceDisconnected(ComponentName name) {}
     };
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        mDrawerToggle.syncState();
+        drawerToggle.syncState();
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        return mDrawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
+        return drawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        mDrawerToggle.onConfigurationChanged(newConfig);
+        drawerToggle.onConfigurationChanged(newConfig);
     }
 
     @Override
@@ -141,7 +145,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
         super.onPause();
 
         if (playbackService != null) {
-            playbackService.removeCallbacks();
+            playbackService.removeCallbacks(); // Remove callbacks in the service when activity isn't visible
         }
         unbindService(playbackServiceConnection);
     }
@@ -150,6 +154,8 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
     protected void onDestroy() {
         super.onDestroy();
 
+        // Stop the service when the app is closed and music isn't playing
+        // Otherwise display notification
         if(!playbackService.isPlaying()) {
             stopService(playbackIntent);
             playbackService = null;
@@ -159,6 +165,9 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
         }
     }
 
+    /*
+        Opens one of the fragments to display in the activity
+    */
     private void openFragment(int position) {
         Fragment fragment = null;
         switch (position) {
@@ -176,22 +185,25 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
             FragmentManager fragmentManager = getFragmentManager();
             fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
 
-            mDrawerList.setItemChecked(position, true);
-            mDrawerList.setSelection(position);
-            mActivityTitle = sideNavItems[position];
-            mDrawerLayout.closeDrawer(mDrawerList);
+            drawerList.setItemChecked(position, true);
+            drawerList.setSelection(position);
+            activityTitle = sideNavItems[position];
+            drawerLayout.closeDrawer(drawerLinearLayout);
 
             assert getSupportActionBar() != null;
-            getSupportActionBar().setTitle(mActivityTitle);
+            getSupportActionBar().setTitle(activityTitle);
         }
     }
 
+    /*
+        Set up side navigation toggle, handling onOpened/onClosed actions
+    */
     private void setupSideNavToggle() {
         assert getSupportActionBar() != null;
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
 
-        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close) {
+        drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.drawer_open, R.string.drawer_close) {
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
                 getSupportActionBar().setTitle(getString(R.string.app_name));
@@ -200,14 +212,17 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
 
             public void onDrawerClosed(View view) {
                 invalidateOptionsMenu();
-                getSupportActionBar().setTitle(mActivityTitle);
+                getSupportActionBar().setTitle(activityTitle);
             }
         };
 
-        mDrawerToggle.setDrawerIndicatorEnabled(true);
-        mDrawerLayout.setDrawerListener(mDrawerToggle);
+        drawerToggle.setDrawerIndicatorEnabled(true);
+        drawerLayout.setDrawerListener(drawerToggle);
     }
 
+    /*
+        Initialise mini player displayed at the bottom, setting up the songs details
+    */
     private void initMiniPlayerUI(boolean isNextSong) {
         Song song;
 
@@ -224,12 +239,9 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
         }
     }
 
-    public void onDeletePlaylistClick(View view) {
-        Fragment f = getFragmentManager().findFragmentById(R.id.frame_container);
-        PlaylistsFragment playlistsFragment = (PlaylistsFragment)f;
-        playlistsFragment.onDeletePlaylistClick(view);
-    }
-
+    /*
+        Handles the song click, finds the right song library and the song's position
+    */
     public void onSongClick(View view) {
         Fragment f = getFragmentManager().findFragmentById(R.id.frame_container);
 
@@ -250,10 +262,16 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
         openPlayerIntent(songPos, true);
     }
 
+    /*
+        Opens a player activity with play request being false
+    */
     public void openPlayer(View view) {
         openPlayerIntent(playbackService.getCurrentSong(), false);
     }
 
+    /*
+        Creates a new player intent and starts it
+    */
     private void openPlayerIntent(int songPos, boolean playReq) {
         Intent playerActivityIntent = new Intent(this, PlayerActivity.class);
         playerActivityIntent.putExtra(Constants.SONG_POSITION, songPos);
@@ -261,6 +279,9 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
         startActivity(playerActivityIntent);
     }
 
+    /*
+        Handles the play/pause button click pausing/unpausing the song
+    */
     public void playPauseClick(View view) {
         ImageButton playPauseButton = (ImageButton) view;
         if (playbackService.isPlaying()) {
@@ -272,11 +293,17 @@ public class MainActivity extends AppCompatActivity implements PlaybackServiceCa
         }
     }
 
+    /*
+        Update UI when playlist ends
+    */
     public void endPlaylist() {
         ImageButton playPauseButton = (ImageButton) findViewById(R.id.play_pause);
         playPauseButton.setImageResource(R.drawable.ic_play);
     }
 
+    /*
+        Update UI when next song comes on
+    */
     @Override
     public void nextSong() {
         if (playbackService.nextSong()) {

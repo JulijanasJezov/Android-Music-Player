@@ -82,7 +82,7 @@ public class SongAdapter extends BaseAdapter {
             }
 
             if (currentSong.isSelected() && isPlaylist) {
-                songItem.songItem.setBackgroundColor(Color.GRAY);
+                songItem.songItem.setBackgroundColor(Color.parseColor("#FF8A65"));
             } else {
                 songItem.songItem.setBackgroundColor(Color.WHITE);
             }

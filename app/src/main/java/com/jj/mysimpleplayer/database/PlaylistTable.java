@@ -16,7 +16,4 @@ public final class PlaylistTable {
             "CREATE TABLE IF NOT EXISTS " + PlaylistTableEntry.TABLE_NAME + " (" +
                     PlaylistTableEntry._ID + " INTEGER PRIMARY KEY," +
                     PlaylistTableEntry.PLAYLIST_NAME + TEXT_TYPE + " )";
-
-    public static final String SQL_DELETE_PLAYLIST_TABLE =
-            "DROP TABLE IF EXISTS " + PlaylistTableEntry.TABLE_NAME;
 }

@@ -24,6 +24,7 @@ import android.provider.MediaStore;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v7.app.NotificationCompat;
+import android.util.Log;
 
 import com.jj.mysimpleplayer.constants.Constants;
 import com.jj.mysimpleplayer.interfaces.PlaybackServiceCallbacks;
@@ -33,7 +34,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class PlaybackService extends Service implements MediaPlayer.OnPreparedListener,
-        MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener {
+        MediaPlayer.OnCompletionListener {
 
     private final IBinder playbackBinder = new PlaybackBinder();
     private PlaybackServiceCallbacks playbackServiceCallbacks;
@@ -44,7 +45,6 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
     private boolean isPlayerStarted = false;
     private boolean isAppClosed = false;
 
-    private MediaSessionManager sessionManager;
     private MediaSessionCompat mediaSession;
     private MediaControllerCompat mediaController;
     private NotificationManager notificationManager;
@@ -77,39 +77,55 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (sessionManager == null) initSession();
+        if (mediaSession == null) initSession();
 
         handleIntent(intent);
         checkNotificationStatus();
         return super.onStartCommand(intent, flags, startId);
     }
 
+    /*
+        Set up the music player
+    */
     public void setupMusicPlayer () {
-        // Music player settings
         player.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
         player.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
         player.setOnPreparedListener(this);
         player.setOnCompletionListener(this);
-        player.setOnErrorListener(this);
     }
 
+    /*
+        Set currently playing list
+    */
     public void setSongLibrary(ArrayList<Song> songs) {
         songLibrary = songs;
     }
 
+    /*
+        Get currently playing list
+    */
     public ArrayList<Song> getSongLibrary() {
         return songLibrary;
     }
 
+    /*
+        Set the position of the song to play
+    */
     public void setCurrentSong(int songPos) {
         songPosition = songPos;
     }
 
+    /*
+        Get the position of the song that is playing
+    */
     public int getCurrentSong() {
         return songPosition;
     }
 
+    /*
+        Works out the song's Id from the Song's object, gets an URI and plays the song
+    */
     public void playSong() {
         player.reset();
 
@@ -121,21 +137,30 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
             player.setDataSource(getApplicationContext(), songUri);
         }
         catch (Exception ex) {
-            ex.printStackTrace();
+            Log.e("setDataSource", "Cannot set the song" + ex.getMessage());
         }
 
         player.prepareAsync();
     }
 
+    /*
+        Stop the player playing
+    */
     public void stopSong() {
         player.stop();
         isPlayerStarted = false;
     }
 
+    /*
+        Pause the player
+    */
     public void pauseSong(){
         player.pause();
     }
 
+    /*
+        Unpause the player
+    */
     public void unpauseSong() {
         if (!isPlayerStarted) {
             playSong();
@@ -146,10 +171,16 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
     }
 
+    /*
+        Seek to time position of the song
+    */
     public void seekTo(int position) {
         player.seekTo(position);
     }
 
+    /*
+        Changes the song to the next one and plays it
+    */
     public boolean nextSong() {
         if (shuffle) {
             Random rand = new Random();
@@ -172,6 +203,9 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
         return true;
     }
 
+    /*
+        Changes the song to the previous one and plays it
+    */
     public boolean prevSong() {
         songPosition--;
         isPlayerStarted = false;
@@ -185,10 +219,16 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
         return true;
     }
 
+    /*
+        Get the status if player is playing
+    */
     public boolean isPlaying() {
         return player.isPlaying();
     }
 
+    /*
+        When the song ends start playing the next one if it exists
+    */
     @Override
     public void onCompletion(MediaPlayer mp) {
         boolean playlistEnded = songPosition == songLibrary.size() - 1;
@@ -211,29 +251,48 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
         }
     }
 
+    /*
+        Get the current time position of the song set
+    */
     public int getCurrentPosition(){
         return player.getCurrentPosition();
     }
 
+    /*
+        Get the full time duration of the song set
+    */
     public int getDuration() {
         return player.getDuration();
     }
 
+    /*
+        Get the status if player is started
+    */
     public boolean isPlayerStarted() {
         return isPlayerStarted;
     }
 
-    @Override
-    public boolean onError(MediaPlayer mp, int what, int extra) {
-        return false;
-    }
-
+    /*
+        Start the player playing
+    */
     @Override
     public void onPrepared(MediaPlayer mp) {
         mp.start();
         isPlayerStarted = true;
     }
 
+    /*
+        Close notification when the task is removed
+    */
+    @Override
+    public void onTaskRemoved(Intent rootIntent){
+        super.onTaskRemoved(rootIntent);
+        closeNotification();
+    }
+
+    /*
+        Stop and remove everything connected to the server
+    */
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -247,34 +306,55 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
         player.release();
     }
 
+    /*
+        Get this service class
+    */
     public class PlaybackBinder extends Binder {
         PlaybackService getService() {
             return PlaybackService.this;
         }
     }
 
+    /*
+        Set callbacks to update the UI e.g. on song change
+    */
     public void setCallbacks(PlaybackServiceCallbacks callbacks) {
         playbackServiceCallbacks = callbacks;
     }
 
+    /*
+        Remove callbacks
+    */
     public void removeCallbacks() {
         playbackServiceCallbacks = null;
     }
 
+    /*
+        Set the application closed status
+    */
     public void setClosedAppFlag(boolean isClosed) {
         isAppClosed = isClosed;
     }
 
+    /*
+        Set shuffle feature to off/on
+    */
     public void setShuffle(boolean shuff) {
         shuffle = shuff;
     }
 
+    /*
+        Get shuffle status if off/on
+    */
     public boolean getShuffleStatus() {
         return shuffle;
     }
 
     // Notification
 
+    /*
+        Set the notification's controls
+    */
     public void handleIntent( Intent intent ) {
         if( intent == null || intent.getAction() == null )
             return;
@@ -299,6 +379,9 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
         }
     }
 
+    /*
+        Build and display the notification displaying the right controls
+    */
     private void buildNotification( NotificationCompat.Action action) {
         Intent deletedIntent = new Intent(Constants.NOTIFICATION_DELETED);
         PendingIntent deletedPendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, deletedIntent, 0);
@@ -345,20 +428,26 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
         isNotificationShown = true;
     }
 
+    /*
+        Generates notification's action e.g. previous, next song etc.
+    */
     private NotificationCompat.Action generateAction(int icon, String title, String intentAction ) {
         Intent intent = new Intent( getApplicationContext(), PlaybackService.class );
         intent.setAction( intentAction );
         PendingIntent pendingIntent = PendingIntent.getService(getApplicationContext(), 1, intent, 0);
+
         return new NotificationCompat.Action.Builder( icon, title, pendingIntent ).build();
     }
 
+    /*
+        Initialise media session setting all the controls for notification
+    */
     public void initSession() {
-        sessionManager = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
         mediaSession = new MediaSessionCompat(getApplicationContext(), "media session", null, null);
         try {
             mediaController = new MediaControllerCompat(getApplicationContext(), mediaSession.getSessionToken());
         } catch (RemoteException ex) {
-            ex.printStackTrace();
+            Log.e("Media controller", "Cannot create MediaControllerCompat " + ex.getMessage());
         }
 
         mediaSession.setActive(true);
@@ -395,10 +484,16 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
         });
     }
 
+    /*
+        Display notification
+    */
     public void showNotification() {
         buildNotification(generateAction(android.R.drawable.ic_media_pause, "Pause", Constants.NOTIFICATION_PAUSE));
     }
 
+    /*
+        Remove notification from the notifications bar
+    */
     public void closeNotification() {
         if (notificationManager != null) {
             notificationManager.cancel(1);
@@ -406,6 +501,9 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
         }
     }
 
+    /*
+        Catches when notification has been swiped off and stops the service if application is closed
+    */
     private final BroadcastReceiver deleteNotificationReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -417,12 +515,18 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
         }
     };
 
+    /*
+        Thread running to show/close notification when needed
+    */
     Runnable maintainNotificationStatus = new Runnable() {
         @Override public void run() {
             checkNotificationStatus();
         }
     };
 
+    /*
+        Method running in the thread to display or remove notification
+    */
     public void checkNotificationStatus() {
         if (player.isPlaying() && playbackServiceCallbacks == null &&  !isNotificationShown) {
             showNotification();
